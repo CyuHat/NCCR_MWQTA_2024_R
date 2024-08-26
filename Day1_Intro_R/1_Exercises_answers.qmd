@@ -1,0 +1,271 @@
+---
+title: Methods Workshop in Quantitative Text Analysis Translated in R
+author:
+  - name: Jisu Kim
+    url: https://github.com/jisukimmmm
+date: "21/03/2024"
+format: html
+---
+
+## Introduction to R language - exercies & answers
+
+### Basic Syntax and Operations:
+1. Write a program to calculate the area of a triangle given its base and height.
+2. Create a program that converts kilometers per hour to meters per second.
+3. Write a Python script that takes a string as input and prints its reverse.
+
+### Conditional Statements and Loops:
+1. Create a program that checks whether a given year is a leap year or not.
+2. Write a Python script to find the sum of all numbers between 1 and 1000 that are divisible by both 3 and 5.
+3. Implement a program to print the first 10 terms of the geometric progression series: 2, 6, 18, 54, ...
+
+### Lists and List Operations:
+1. Create a program to find the largest and smallest elements in a list.
+2. Write a Python script to find the intersection of two lists.
+3. Implement a program to shuffle a deck of cards represented as a list.
+
+### Strings and String Operations:
+1. Write a Python script to capitalize the first letter of each word in a sentence.
+2. Create a program to find the most frequent character in a given string.
+3. Implement a program to check if a given string contains only digits.
+
+### Functions:
+1. Create a function to check whether a given number is a perfect square or not.
+2. Implement a function to reverse the elements of a list in place.
+3. Create a function to calculate the mean (average) of a list of numbers.
+
+### File Handling:
+1. Create a program to read a CSV file containing student scores and calculate their average (Use Pandas package).
+2. Write a Python script to find and print all lines containing a specific word in a text file.
+3. Implement a program to count the number of words in a text file.
+
+### Plotting:
+1. Histogram of Student Scores: Create a histogram showing the distribution of student scores.
+2. Boxplot of Student Scores: Generate a boxplot to visualize the spread and central tendency of student scores.
+3. Scatter Plot of Student Scores: Create a scatter plot to explore the relationship between student scores and student IDs.
+
+1. Calculate the area of a triangle:
+
+```{r}
+base <- 10
+height <- 3
+
+triangle <- base * height / 2
+
+print(paste("This is the area:", triangle))
+print(paste("This is the answer", triangle, "and after..."))
+```
+
+2. Program to convert kilometers per hour to meters per second:
+
+```{r}
+kmph <- 100
+
+ms <- kmph * 1000 / 3600
+
+print(paste("The answer is", ms))
+```
+
+3. R script to reverse a string:
+
+```{r}
+my_text <- "This is a text"
+
+rev_text <- paste(rev(strsplit(my_text, NULL)[[1]]), collapse = "")
+print(rev_text)
+```
+
+### Conditional Statements and Loops:
+1. Check if a year is a leap year:
+
+```{r}
+year <- 3000
+
+if ((year %% 4 == 0 && year %% 100 != 0) || (year %% 400 == 0)) {
+  print("This is a leap year")
+} else {
+  print("This is not a leap year")
+}
+```
+
+2. R script to find the sum of all numbers between 1 and 1000 that are divisible by both 3 and 5:
+
+```{r}
+numbers <- 1:1000
+
+bag <- numbers[numbers %% 3 == 0 & numbers %% 5 == 0]
+
+sum(bag)
+```
+
+3. Program to print the first 10 terms of the geometric progression series: 2, 6, 18, 54, ...
+
+```{r}
+first <- 2
+common_ratio <- 3
+gp_series <- numeric(10)
+gp_series[1] <- first
+
+for (i in 2:10) {
+  gp_series[i] <- gp_series[i-1] * common_ratio
+}
+
+gp_series
+```
+
+### Lists and List Operations:
+1. Find the largest and smallest elements in a list:
+
+```{r}
+number_list <- c(2, 5, 1, 67, 4, 7)
+
+mini <- min(number_list)
+maxi <- max(number_list)
+
+print(paste("Min:", mini, "Max:", maxi))
+```
+
+2. R script to find the intersection of two lists:
+
+```{r}
+list1 <- c(1, 2, 3, 4, 5)
+list2 <- c(4, 5, 6, 7, 8)
+
+intersection <- intersect(list1, list2)
+
+print(intersection)
+```
+
+3. Program to shuffle a deck of cards represented as a list:
+
+```{r}
+deck <- c("A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K")
+shuffled_deck <- sample(deck)
+
+print(shuffled_deck)
+```
+
+### Strings and String Operations:
+1. Capitalize the first letter of each word in a sentence:
+
+```{r}
+sentence <- "this is a sentence"
+capitalized_sentence <- tools::toTitleCase(sentence)
+
+print(capitalized_sentence)
+```
+
+2. Program to find the most frequent character in a given string:
+
+```{r}
+string <- "this is a string"
+most_frequent_char <- names(sort(table(strsplit(string, NULL)[[1]]), decreasing = TRUE))[1]
+
+print(most_frequent_char)
+```
+
+3. Program to check if a given string contains only digits:
+
+```{r}
+string <- "123456"
+
+is_digits <- grepl("^[0-9]+$", string)
+
+print(is_digits)
+```
+
+### Functions:
+1. Check if a number is a perfect square:
+
+```{r}
+is_perfect_square <- function(x) {
+  sqrt_x <- sqrt(x)
+  return(sqrt_x == floor(sqrt_x))
+}
+
+print(is_perfect_square(16))
+print(is_perfect_square(15))
+```
+
+2. Implement a function to reverse the elements of a list in place:
+
+```{r}
+reverse_list <- function(lst) {
+  return(rev(lst))
+}
+
+print(reverse_list(c(1, 2, 3, 4, 5)))
+```
+
+3. Create a function to calculate the mean (average) of a list of numbers:
+
+```{r}
+calculate_mean <- function(numbers) {
+  return(mean(numbers))
+}
+
+print(calculate_mean(c(1, 2, 3, 4, 5)))
+```
+
+### File Handling:
+1. Read a CSV file containing student scores and calculate their average (Use Pandas package):
+
+```{r}
+library(readr)
+
+student_scores <- read_csv("student_scores.csv")
+average_score <- mean(student_scores$score)
+
+print(average_score)
+```
+
+2. Write an R script to find and print all lines containing a specific word in a text file:
+
+```{r}
+find_lines_with_word <- function(file_path, word) {
+  lines <- readLines(file_path)
+  matching_lines <- grep(word, lines, value = TRUE)
+  return(matching_lines)
+}
+
+print(find_lines_with_word("example.txt", "specific_word"))
+```
+
+3. Implement a program to count the number of words in a text file:
+
+```{r}
+count_words_in_file <- function(file_path) {
+  lines <- readLines(file_path)
+  words <- unlist(strsplit(lines, "\\s+"))
+  return(length(words))
+}
+
+print(count_words_in_file("example.txt"))
+```
+
+### Plotting:
+1. Histogram of Student Scores:
+
+```{r}
+library(ggplot2)
+
+ggplot(student_scores, aes(x = score)) +
+  geom_histogram(binwidth = 5) +
+  labs(title = "Histogram of Student Scores", x = "Score", y = "Frequency")
+```
+
+2. Boxplot of Student Scores:
+
+```{r}
+ggplot(student_scores, aes(y = score)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Student Scores", y = "Score")
+```
+
+3. Scatter Plot of Student Scores:
+
+```{r}
+ggplot(student_scores, aes(x = student_id, y = score)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Student Scores", x = "Student ID", y = "Score")
+```

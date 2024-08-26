@@ -1,0 +1,505 @@
+Some of the codes here are from huggingface.co/course
+Twitter data for the small exercise has been obtained from https://data.world/adamhelsinger/elon-musk-tweets-until-4-6-17
+
+DESCRIPTION
+Elon Musk's tweets from 2010-06-04 to 2017-04-05.
+
+SUMMARY-
+Includes:
+* Tweet ID 
+* Date & Time Tweet was created 
+* Tweets & Mentions 
+
+Note: In order to use GPU, please follow the steps before you start running the codes: Runtime > Change runtime type > Hardware Accelerator
+
+Here is the translation of the provided Python tutorial to an R tutorial, keeping the RMarkdown syntax and the text between chunks of code:
+
+### Load necessary libraries
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(httr)
+library(jsonlite)
+library(tokenizers)
+library(text)
+library(quanteda)
+library(quanteda.textmodels)
+library(quanteda.textplots)
+library(tidytext)
+library(tictoc)
+library(reticulate)
+
+# Check if CUDA is available
+cuda_available <- reticulate::py_run_string("import torch; torch.cuda.is_available()")
+print(cuda_available)
+```
+
+### Text classification
+
+```{r}
+# Load the transformers library
+transformers <- import("transformers")
+
+# Load the text classification pipeline
+classifier <- transformers$pipeline("text-classification", model = "nlptown/bert-base-multilingual-uncased-sentiment")
+
+# Define the text to be classified
+text <- "SpaceX's mission to Mars is a revolutionary step in space exploration."
+
+# Classify the text
+result <- classifier(text)
+print(result)
+```
+
+### Zero-shot classification
+
+```{r}
+# Load the zero-shot classification pipeline
+classifier <- transformers$pipeline("zero-shot-classification", model = 'facebook/bart-large-mnli')
+
+# Classify the text with candidate labels
+result <- classifier(
+  "This is a course about the Transformers library",
+  candidate_labels = c("education", "politics", "business")
+)
+print(result)
+```
+
+### Grammatical correctness
+
+```{r}
+# Load the grammatical correctness classification pipeline
+classifier <- transformers$pipeline("text-classification", model = "textattack/distilbert-base-uncased-CoLA")
+
+# Classify the text for grammatical correctness
+result <- classifier("I will walk to home when I went through the bus.")
+print(result)
+```
+
+### Sentiment analysis
+
+```{r}
+# Load the sentiment analysis pipeline
+classifier <- transformers$pipeline("sentiment-analysis", model = 'distilbert/distilbert-base-uncased-finetuned-sst-2-english')
+
+# Classify the text for sentiment
+result <- classifier("I've been waiting for a HuggingFace course my whole life.")
+print(result)
+```
+
+### Translation
+
+```{r}
+# Load the translation pipeline
+translator <- transformers$pipeline("translation_en_to_fr", model = "Helsinki-NLP/opus-mt-en-fr")
+
+# Define the text to be translated
+text_to_translate <- "I am sitting in a NLP workshop"
+
+# Translate the text
+translated_text <- translator(text_to_translate, max_length = 40)
+
+# Display the translated text
+cat("Original Text:", text_to_translate, "\n")
+cat("Translated Text:", translated_text[[1]]$translation_text, "\n")
+```
+
+### Text generation
+
+```{r}
+# Load the text generation pipeline
+generator <- transformers$pipeline('text-generation', model = 'gpt2')
+
+# Define the prompt
+prompt <- "I am sitting in a NLP workshop"
+
+# Set the seed for reproducibility
+transformers$set_seed(4)
+
+# Generate text
+generated_text <- generator(prompt, max_length = 30, num_return_sequences = 5)
+print(generated_text)
+```
+
+### ChatGPT
+
+```{r}
+# Install the openai package
+# install.packages("openai")
+
+# Load the openai package
+library(openai)
+
+# Set your OpenAI API key
+Sys.setenv(OPENAI_API_KEY = 'YOUR_KEY')
+
+# Function to get ChatGPT response
+get_chatgpt_response <- function(prompt) {
+  response <- openai::create_chat_completion(
+    model = "gpt-3.5-turbo",  # or "gpt-4" if you have access
+    messages = list(
+      list(role = "system", content = "You are a helpful assistant."),
+      list(role = "user", content = prompt)
+    ),
+    max_tokens = 150,  # Adjust the max tokens based on your needs
+    temperature = 0.7  # Adjust the temperature based on the creativity you need
+  )
+  return(response$choices[[1]]$message$content)
+}
+
+# Main loop to interact with the user
+while (TRUE) {
+  user_input <- readline(prompt = "Enter a prompt (or 'exit' to quit): ")
+  if (tolower(user_input) == 'exit') {
+    break
+  }
+  response <- get_chatgpt_response(user_input)
+  cat("ChatGPT:", response, "\n")
+}
+```
+
+### Counting tokens
+
+```{r}
+# Install the tiktoken package
+# install.packages("tiktoken")
+
+# Load the tiktoken package
+library(tiktoken)
+
+# Initialize the tokenizer for the specific GPT model
+encoding <- tiktoken::encoding_for_model('gpt-3.5-turbo')
+
+# Sample text
+text <- "Hello world! This is a test sequence to count tokens."
+
+# Encode the text to get the token IDs
+tokens <- encoding$encode(text)
+
+# Count the number of tokens
+num_tokens <- length(tokens)
+
+cat("Number of tokens:", num_tokens, "\n")
+```
+
+### Counting tokens for multiple inputs
+
+```{r}
+# Sample inputs
+system_message <- "You are a helpful assistant."
+user_input <- "Can you help me count the tokens in this message?"
+
+# Encode each input separately
+system_tokens <- encoding$encode(system_message)
+user_tokens <- encoding$encode(user_input)
+
+# Combine the tokens and count the total number of tokens
+total_tokens <- length(system_tokens) + length(user_tokens)
+
+cat("Total number of tokens:", total_tokens, "\n")
+```
+
+### Sentiment analysis on Elon Musk's tweets
+
+```{r}
+# Load the sentiment analysis model
+task <- 'sentiment'
+device <- ifelse(cuda_available, "cuda:0", "cpu")
+MODEL <- paste0("cardiffnlp/twitter-roberta-base-", task)
+
+tokenizer <- transformers$AutoTokenizer$from_pretrained(MODEL)
+model <- transformers$AutoModelForSequenceClassification$from_pretrained(MODEL)
+model <- model$to(device)
+```
+
+```{r}
+# Download label mapping
+labels <- c()
+mapping_link <- paste0("https://raw.githubusercontent.com/cardiffnlp/tweeteval/main/datasets/", task, "/mapping.txt")
+mapping_data <- read.csv(mapping_link, sep = "\t", header = FALSE)
+labels <- mapping_data$V2
+```
+
+```{r}
+# Upload the file
+uploaded_file <- file.choose()
+df <- read.csv(uploaded_file)
+head(df, 5)
+```
+
+```{r}
+# Function to create batches
+batch <- function(iterable, n = 1) {
+  l <- length(iterable)
+  for (ndx in seq(1, l, by = n)) {
+    yield(iterable[ndx:min(ndx + n - 1, l)])
+  }
+}
+```
+
+```{r}
+# Pass batches through model to get scores
+done <- 0
+score_output <- list()
+rob_table <- list()
+print(Sys.time())
+
+for (chunk in batch(df, 100)) {
+  for (i in 1:nrow(chunk)) {
+    done <- done + 1
+    try({
+      encoded_input <- tokenizer(chunk$text[i], return_tensors = 'pt', padding = TRUE, truncation = TRUE, max_length = 50, add_special_tokens = TRUE)$to(device)
+      output <- model(encoded_input)
+      scores <- output[[1]][1, ]$detach()$cpu()
+      scores <- softmax(scores)
+      score_output <- append(score_output, list(scores))
+      rob_table <- append(rob_table, list(c(chunk$uid[i], chunk$text[i], scores[1], scores[2], scores[3])))
+    }, silent = TRUE)
+    if (done %% 500 == 0) {
+      print(done)
+      print(Sys.time())
+    }
+  }
+}
+```
+
+```{r}
+# Create a DataFrame with the results
+roberta_Sent <- as.data.frame(do.call(rbind, rob_table), stringsAsFactors = FALSE)
+colnames(roberta_Sent) <- c('uid', 'texts', 'rob_neg', 'rob_neu', 'rob_pos')
+head(roberta_Sent, 5)
+```
+
+```{r}
+# Plot histograms of sentiment scores
+par(mfrow = c(1, 3))
+hist(as.numeric(roberta_Sent$rob_pos), breaks = 20, main = 'rob_pos', col = 'skyblue')
+hist(as.numeric(roberta_Sent$rob_neu), breaks = 20, main = 'rob_neu', col = 'skyblue')
+hist(as.numeric(roberta_Sent$rob_neg), breaks = 20, main = 'rob_neg', col = 'skyblue')
+```
+
+```{r}
+# Get the sentiment label with the highest score
+roberta_Sent <- roberta_Sent %>%
+  mutate(across(c(rob_neg, rob_neu, rob_pos), as.numeric)) %>%
+  mutate(roberta_overall = pmax(rob_neg, rob_neu, rob_pos))
+
+head(roberta_Sent, 2)
+```
+
+```{r}
+# Plot the overall sentiment distribution
+roberta_Sent %>%
+  count(roberta_overall) %>%
+  ggplot(aes(x = reorder(roberta_overall, n), y = n, fill = roberta_overall)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Overall Sentiment Distribution", x = "Sentiment", y = "Count")
+```
+
+Here is the translation of the provided Python tutorial to an R tutorial, keeping the RMarkdown syntax and the text between chunks of code:
+
+## Analyse topics of Elon Musk's tweets using zero-shot classification
+
+```{r}
+# Load the transformers library
+transformers <- import("transformers")
+
+# Load the zero-shot classification pipeline
+classifier <- transformers$pipeline("zero-shot-classification", model = 'facebook/bart-large-mnli')
+
+# Function to classify a single text
+classify_text <- function(text) {
+  classification <- classifier(text, candidate_labels = c('Technology', 'Twitter', 'Developer', 'Business', 'News', 'SpaceX', 'Others'), multi_label = FALSE)
+  predicted_label <- classification$labels[[1]]
+  return(predicted_label)
+}
+
+# Function to create batches
+batch <- function(iterable, n = 1) {
+  l <- length(iterable)
+  for (ndx in seq(1, l, by = n)) {
+    yield(iterable[ndx:min(ndx + n - 1, l)])
+  }
+}
+
+# Randomly sample 50 lines from the DataFrame because the code runs slow
+random_sample <- roberta_Sent %>% sample_n(50, replace = FALSE)
+
+# Process data
+done <- 0
+print(Sys.time())
+
+# Process in parallel
+plan(multisession, workers = 8)  # Adjust max_workers based on your system's capabilities
+results <- future_map_dfr(random_sample, function(row) {
+  text <- row$texts
+  predicted_label <- classify_text(text)
+  row$predicted_label <- predicted_label
+  return(row)
+})
+
+print("Processing complete", Sys.time())
+```
+
+```{r}
+# Display the first few rows of the results
+head(results, 3)
+```
+
+```{r}
+# Plot the distribution of predicted labels
+results %>%
+  count(predicted_label) %>%
+  ggplot(aes(x = reorder(predicted_label, n), y = n, fill = predicted_label)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Distribution of Predicted Labels", x = "Predicted Label", y = "Count")
+```
+
+## Use ChatGPT to generate Elon Musk-style tweets based on his previous tweets.
+
+```{r}
+# Install the openai package
+# install.packages("openai")
+
+# Load the openai package
+library(openai)
+
+# Set your OpenAI API key
+Sys.setenv(OPENAI_API_KEY = 'YOUR_KEY')
+
+# Set your OpenAI API key from the environment variable
+openai_api_key <- Sys.getenv("OPENAI_API_KEY")
+
+elons_tweets <- paste(roberta_Sent$texts[1:100], collapse = "\n")
+
+# Choose the GPT-3 chat model
+model_name <- "gpt-3.5-turbo-16k"
+
+# Prompt for generating Elon Musk-style tweets
+prompt <- sprintf("
+Elon Musk tweets:
+
+%s
+
+Generate an Elon Musk-style tweet about the future of technology or space exploration.
+", elons_tweets)
+
+# Generate text using the specified GPT-3 chat model
+response <- openai::create_chat_completion(
+  model = model_name,
+  messages = list(
+    list(role = "system", content = prompt)
+  ),
+  n = 5,  # Number of responses to generate
+  stop = "\n",  # Stop generation at the end of a line
+  max_tokens = 50,  # Adjust the number of tokens for longer or shorter tweets
+  temperature = 0.7  # Adjust the temperature for more or less randomness
+)
+
+# Print the generated tweets
+cat("Generated Tweets:\n")
+for (i in 1:5) {
+  cat(response$choices[[i]]$message$content, "\n")
+}
+```
+
+## Translate Elon Musk's tweets to French and perform sentiment analysis on the tweets in French
+
+```{r}
+# Load the translation pipeline
+translator <- transformers$pipeline("translation_en_to_fr", model = "Helsinki-NLP/opus-mt-en-fr")
+
+# Translate the texts
+random_sample$translated_text <- sapply(random_sample$texts, function(text) {
+  translation <- translator(text, max_length = 512)
+  return(translation[[1]]$translation_text)
+})
+```
+
+```{r}
+# Load the tokenizer and model for sentiment analysis
+tokenizer <- transformers$AutoTokenizer$from_pretrained("cardiffnlp/twitter-xlm-roberta-base-sentiment")
+model <- transformers$AutoModelForSequenceClassification$from_pretrained("cardiffnlp/twitter-xlm-roberta-base-sentiment")
+
+# Function for sentiment analysis using the model
+analyze_sentiment <- function(text) {
+  inputs <- tokenizer(text, return_tensors = "pt", truncation = TRUE, padding = TRUE)
+  outputs <- model(inputs)
+  logits <- outputs$logits
+  sentiment_score <- which.max(logits) - 1
+
+  if (sentiment_score == 0) {
+    return("Negative")
+  } else if (sentiment_score == 1) {
+    return("Neutral")
+  } else {
+    return("Positive")
+  }
+}
+
+# Apply sentiment analysis
+random_sample$french_sentiment <- sapply(random_sample$translated_text, analyze_sentiment)
+```
+
+```{r}
+# Save the updated DataFrame to a new CSV file
+write.csv(random_sample, 'elon_tweets_translated_sentiment_100.csv', row.names = FALSE)
+```
+
+```{r}
+# Get the sentiment label with the highest score
+random_sample <- random_sample %>%
+  mutate(across(c(rob_neg, rob_neu, rob_pos), as.numeric)) %>%
+  mutate(roberta_overall = pmax(rob_neg, rob_neu, rob_pos))
+
+head(random_sample, 2)
+```
+
+```{r}
+# Set up the plotting environment
+library(ggplot2)
+library(sns)
+
+# Create a figure with two subplots
+par(mfrow = c(1, 2))
+
+# Plot the distribution of french_sentiment
+ggplot(random_sample, aes(x = french_sentiment)) +
+  geom_bar(fill = 'viridis') +
+  theme_minimal() +
+  labs(title = 'Distribution of French Sentiment', x = 'French Sentiment', y = 'Count')
+
+# Plot the distribution of roberta_overall
+ggplot(random_sample, aes(x = roberta_overall)) +
+  geom_bar(fill = 'viridis') +
+  theme_minimal() +
+  labs(title = 'Distribution of Roberta Overall Sentiment', x = 'Roberta Overall Sentiment', y = 'Count')
+```
+
+```{r}
+# Compute the agreement
+random_sample <- random_sample %>%
+  mutate(roberta_sentiment = case_when(
+    roberta_overall == 'rob_pos' ~ 'Positive',
+    roberta_overall == 'rob_neu' ~ 'Neutral',
+    roberta_overall == 'rob_neg' ~ 'Negative'
+  )) %>%
+  mutate(agreement = french_sentiment == roberta_sentiment)
+
+# Calculate the percentage of agreement
+agreement_percentage <- mean(random_sample$agreement) * 100
+cat(sprintf('Agreement Percentage: %.2f%%\n', agreement_percentage))
+
+# Confusion matrix
+cm <- table(random_sample$french_sentiment, random_sample$roberta_sentiment)
+
+# Plot the confusion matrix
+library(caret)
+fourfoldplot(cm, color = c("#CC6666", "#99CC99", "#66CC66", "#9999CC"), conf.level = 0, margin = 1)
+title('Confusion Matrix of Sentiment Agreement')
+```

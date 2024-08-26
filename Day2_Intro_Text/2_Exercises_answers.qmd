@@ -1,0 +1,587 @@
+---
+Title: Methods Workshop in Quantitative Text Analysis Translated in R
+Author: [Jisu Kim](https://github.com/jisukimmmm) 
+update: 21/03/2024
+---
+
+# *Introduction to text analysis - Exercises*
+
+Here, we'll be diving into various text processing techniques, using the beloved classic "Alice's Adventures in Wonderland" by Lewis Carroll as our playground. This exercise set will guide you through a series of hands-on tasks aimed at developing your skills in string manipulation, text normalization, tokenization, and more advanced topics like Named Entity Recognition (NER) and Word Embeddings. Each exercise is crafted to help you understand the underlying principles of text analysis while engaging with the whimsical and imaginative text of "Alice's Adventures in Wonderland".
+
+Source of the text: https://www.geeksforgeeks.org/
+
+### Built-in string manipulation functions
+1. Find and print the first and last occurrence of the word "Alice" in the book.
+2. Split the chapter 1.
+3. Replace name "Alice" to your own name.
+
+### Lowercasing
+1. Convert the entire text of the first chapter to lowercase.
+2. Compare two sentences from different parts of the book case-insensitively to check if they are the same.
+
+### Removing Punctuations, Numbers, and Special Characters
+1. Remove all punctuations from the first paragraph of the book.
+2. Write a function to remove any numbers and special characters found in the text of the first chapter.
+
+### Handling Contractions
+1. Expand all contractions in the famous quote "We're all mad here." from the book using a dictionary of contractions.
+
+### Spell Checking and Correction
+1. Identify and correct any intentionally misspelled words in a given excerpt from the book.
+
+### Tokenization
+1. Tokenize the first paragraph into sentences and words.
+2. Write a function that tokenizes a sentence into words without using any library functions.
+
+### Regular Expressions
+1. Extract all email addresses (if any) from the text using regular expressions. (You can add fake email addresses for fun.)
+2. Find all uppercase words in the first chapter using regular expressions.
+
+### Normalization
+1. Normalize a given excerpt by converting it to lowercase and removing punctuations.
+2. Write a function that normalizes white space in the text (e.g., convert multiple spaces to a single space).
+
+### Stemming
+1. Apply stemming to a list of words from a random page in the book using the Porter Stemmer.
+2. Compare the results of different stemming algorithms on the same text excerpt.
+
+### Lemmatization
+1. Lemmatize a list of words from the book using the `textstem` package.
+2. Compare the output of lemmatization and stemming on the same set of words.
+
+### Part of Speech (POS) Tagging
+1. Return the POS tags of all words in a selected paragraph.
+2. Count the number of nouns, verbs, and adjectives in the selected paragraph.
+
+### Named Entity Recognition (NER)
+1. Extract all the names of characters mentioned in the book using NER.
+
+### Bag of Words (BoW)
+1. Create a Bag of Words representation for the first chapter.
+
+### TF-IDF
+1. Compute the TF-IDF scores for a collection of chapters.
+2. Write a function that returns the top 5 words with the highest TF-IDF scores in a specific chapter.
+
+### Word Embeddings
+1. Find the most similar words to "Rabbit".
+2. Write a function that computes the cosine similarity between two words, such as "Alice" and "Wonderland".
+
+### N-grams
+1. Generate and print all bigrams and trigrams from the Mad Hatter's tea party scene.
+2. Write a function that counts the frequency of each n-gram in the first chapter.
+
+### Text Length and Complexity
+1. Calculate the average word length and sentence length in the first chapter.
+2. Write a function that computes the Flesch Reading Ease score of the book's first chapter.
+
+### Collocation and Terminology Extraction
+1. Identify and print the most common collocations in the conversation between Alice and the Cheshire Cat.
+2. Write a function that extracts key terms from a selected chapter based on their frequency and context.
+3. Plot the frequency distribution of these key terms using `ggplot2`.
+4. Remove punctuations and stopwords and redo the plot.
+
+# Answers
+
+### Built-in string manipulation functions
+1. Find and print the first and last occurrence of the word "Alice" in the book.
+
+```{r}
+# Load data first
+text <- readLines('./alice.txt', encoding = 'UTF-8')
+text <- paste(text, collapse = " ")
+```
+
+```{r}
+# Find and print the first and last occurrence of the word "Alice"
+first_occurrence <- regexpr("Alice", text)
+last_occurrence <- regexpr("Alice", text, fixed = TRUE, useBytes = TRUE, invert = TRUE)
+print(paste("First occurrence of 'Alice':", first_occurrence))
+print(paste("Last occurrence of 'Alice':", last_occurrence))
+```
+
+2. Split the chapter 1
+
+```{r}
+# Split the chapter 1
+first_chapter <- unlist(strsplit(text, "CHAPTER"))[2]
+print(first_chapter)
+```
+
+3. Replace name "Alice" to your own name
+
+```{r}
+# Replace name "Alice" to your own name
+replaced_text <- gsub("Alice", "Jisu", first_chapter)
+print(replaced_text)
+```
+
+### Lowercasing
+1. Convert the entire text of the first chapter to lowercase.
+
+```{r}
+# Convert the entire text of the first chapter to lowercase
+first_chapter_lower <- tolower(first_chapter)
+print(first_chapter_lower)
+```
+
+2. Compare two sentences from different parts of the book case-insensitively to check if they are the same.
+
+```{r}
+# Compare two sentences case-insensitively
+sentence1 <- "Alice was beginning to get very tired."
+sentence2 <- "alice was beginning to get very tired."
+are_equal <- tolower(sentence1) == tolower(sentence2)
+print(paste("Are the sentences equal?", are_equal))
+```
+
+### Removing Punctuations, Numbers, and Special Characters
+1. Remove all punctuations from the first paragraph of the book.
+
+```{r}
+# Assuming first_chapter contains the content of the first chapter
+
+# Split the first chapter into paragraphs
+paragraphs <- unlist(strsplit(first_chapter, "\n\n"))
+
+first_paragraph <- paragraphs[2]
+print(paste("Original text:", first_paragraph))
+
+# Remove punctuation
+text_without_punctuation <- gsub("[[:punct:]]", "", first_paragraph)
+
+# Display text without punctuation
+print(paste("After removing all punctuations:", text_without_punctuation))
+```
+
+2. Write a function to remove any numbers and special characters found in the text of the first chapter.
+
+```{r}
+# Remove numbers and special characters
+cleaned_text <- gsub("[[:digit:][:punct:]]", "", first_paragraph)
+
+# Display cleaned text
+print(cleaned_text)
+```
+
+### Handling Contractions
+1. Expand all contractions in the famous quote "We're all mad here." from the book
+
+ using
+
+ a dictionary of contractions.
+
+```{r}
+library(textclean)
+
+sample_passage <- "I'm late! We're all mad here. That's the problem."
+
+expanded_passage <- replace_contraction(sample_passage)
+print(expanded_passage)
+```
+
+### Spell Checking and Correction
+1. Identify and correct any intentionally misspelled words in a given excerpt from the book.
+
+```{r}
+library(hunspell)
+
+misspelled_text <- paragraphs[13]
+print(misspelled_text)
+
+# Correcting the misspelled words
+words <- unlist(strsplit(misspelled_text, " "))
+misspelled <- hunspell(words)
+
+for (word in misspelled) {
+  corrected_word <- hunspell_suggest(word)[[1]][1]
+  misspelled_text <- gsub(word, corrected_word, misspelled_text)
+}
+
+print(paste("Corrected text:", misspelled_text))
+```
+
+### Tokenization
+1. Tokenize the first paragraph into sentences and words.
+
+```{r}
+library(tokenizers)
+
+# Tokenize the first chapter into sentences and words
+sentences <- tokenize_sentences(first_paragraph)
+words <- tokenize_words(first_paragraph)
+
+print(sentences[[1]][1:5])  # Print the first 5 sentences
+print(words[[1]][1:20])  # Print the first 20 words
+```
+
+2. Write a function that tokenizes a sentence into words without using any library functions.
+
+```{r}
+# Tokenize a sentence without using library functions
+simple_tokenize <- function(sentence) {
+  unlist(strsplit(sentence, " "))
+}
+
+tokenized_simple <- simple_tokenize(first_paragraph)
+print(tokenized_simple)
+```
+
+### Regular Expressions
+1. Extract all email addresses (if any) from the text using regular expressions. (You can add fake email addresses for fun.)
+
+```{r}
+# Add fake email addresses for demonstration
+text_with_emails <- paste(text, "Contact us at alice@wonderland.com or rabbit@wonderland.com.")
+
+# Extract email addresses
+emails <- regmatches(text_with_emails, gregexpr("[[:alnum:]._%+-]+@[[:alnum:].-]+\\.[[:alpha:]]{2,}", text_with_emails))
+print(emails)
+```
+
+2. Find all uppercase words in the first chapter using regular expressions.
+
+```{r}
+# Find all words starting with a capital letter
+uppercase_words <- unlist(regmatches(first_chapter, gregexpr("\\b[A-Z]+\\b", first_chapter)))
+print(uppercase_words[1:20])  # Print the first 20 uppercase words
+```
+
+### Normalization
+1. Normalize a given excerpt by converting it to lowercase and removing punctuations.
+
+```{r}
+# Normalize by converting to lowercase and removing punctuations
+normalize_text <- function(text) {
+  text <- tolower(text)
+  text <- gsub("[[:punct:]]", "", text)
+  return(text)
+}
+
+normalized_excerpt <- normalize_text(first_paragraph)
+print(normalized_excerpt)
+```
+
+2. Write a function that normalizes white space in the text (e.g., convert multiple spaces to a single space).
+
+```{r}
+# Normalize white space
+normalize_whitespace <- function(text) {
+  gsub("\\s+", " ", text)
+}
+
+normalized_whitespace_text <- normalize_whitespace(misspelled_text)
+print(normalized_whitespace_text)
+```
+
+### Stemming
+1. Apply stemming to a list of words from a random page in the book using the Porter Stemmer.
+
+```{r}
+library(SnowballC)
+
+# Apply stemming to each word
+stemmed_words <- wordStem(words[[1]], language = "porter")
+
+# Join the stemmed words back into a string
+stemmed_text <- paste(stemmed_words, collapse = " ")
+
+print("Original text:")
+print(first_paragraph)
+print("\nStemmed text:")
+print(stemmed_text)
+```
+
+2. Compare the results of different stemming algorithms on the same text excerpt.
+
+```{r}
+# Apply Snowball Stemmer
+stemmed_snowball <- wordStem(words[[1]], language = "snowball")
+print(paste("Snowball Stemmer:", stemmed_snowball))
+```
+
+### Part of Speech (POS) Tagging
+1. Return the POS tags of all words in a selected paragraph.
+
+```{r}
+library(openNLP)
+library(NLP)
+
+# POS tagging a sentence
+tagger <- Maxent_POS_Tag_Annotator()
+tokens <- word_token_annotator()
+pos_tags <- annotate(first_paragraph, list(tokens, tagger))
+print(pos_tags)
+```
+
+2. Count the number of nouns, verbs, and adjectives in the selected paragraph.
+
+```{r}
+# Counting nouns, verbs, and adjectives
+nouns <- sum(sapply(pos_tags$features, function(x) x$POS == "NN"))
+verbs <- sum(sapply(pos_tags$features, function(x) x$POS == "VB"))
+adjectives <- sum(sapply(pos_tags$features, function(x) x$POS == "JJ"))
+
+print(paste("Nouns:", nouns))
+print(paste("Verbs:", verbs))
+print(paste("Adjectives:", adjectives))
+```
+
+### Named Entity Recognition (NER)
+1. Extract all the names of characters mentioned in the book using NER.
+
+```{r}
+# Extracting names of characters
+extract_entities <- function(text) {
+  tokens <- word_token_annotator()
+  pos_tags <- annotate(text, list(tokens, tagger))
+  named_entities <- annotate(text, Maxent_Entity_Annotator())
+  return(named_entities)
+}
+
+character_names <- extract_entities(first_chapter)
+print(character_names)
+```
+
+### Bag of Words (BoW)
+1. Create a Bag of Words representation for the first chapter.
+
+```{r}
+library(tm)
+
+# Create Bag of Words
+corpus <- Corpus(VectorSource(first_chapter))
+dtm <- DocumentTermMatrix(corpus)
+
+# Convert to a DataFrame for better readability
+df <- as.data.frame(as.matrix(dtm))
+print(df)
+```
+
+### TF-IDF (Term Frequency-Inverse Document Frequency)
+1. Compute the TF-IDF scores for a collection of chapters.
+
+```{r}
+library(tm)
+
+# Assuming chapters are stored in a list
+chapters <- unlist(strsplit(text, "CHAPTER"))[-1]
+
+# Compute TF-IDF
+corpus <- Corpus(VectorSource(chapters))
+tdm <- TermDocumentMatrix(corpus, control = list(weighting = weightTfIdf))
+
+# Convert to DataFrame
+tfidf_df <- as.data.frame(as.matrix(tdm))
+print(tfidf_df)
+```
+
+2. Write a function that returns the top 5 words with the highest TF-IDF scores in a specific chapter.
+
+```{r}
+# Function to get top 5 words with highest TF-IDF scores
+top_tfidf_words <- function(chapter, n = 5) {
+  corpus <- Corpus(VectorSource(chapter))
+  tdm <- TermDocumentMatrix(corpus, control = list(weighting = weightTfIdf))
+  scores <- as.matrix(tdm)
+  scores <- sort(rowSums(scores), decreasing = TRUE)
+  return(head(scores, n))
+}
+
+top_words <- top_tfidf_words(first_chapter)
+print(top_words)
+```
+
+### Word Embeddings
+1. Find the most similar words to "Rabbit".
+
+```{r}
+library(textTinyR)
+
+# Load pre-trained word embeddings (Word2Vec model)
+word_vectors <- read.word2vec("path/to/word2vec/model")
+
+# Find most similar words to "Rabbit"
+similar_words <- word_vectors$similarity("Rabbit")
+
+# Print the most similar words
+print("Most similar words to 'Rabbit':")
+print(similar_words)
+```
+
+2. Write a function that computes the cosine similarity between two words, such as "Alice" and "Wonderland".
+
+```{r}
+library(textTinyR)
+
+# Compute cosine similarity between two words
+cosine_similarity <- function(word1, word2, model) {
+  vec1 <- model[word1, ]
+  vec2 <- model[word2, ]
+
+```
+
+### N-grams
+1. Generate and print all bigrams and trigrams from the Mad Hatter's tea party scene.
+
+```{r}
+library(quanteda)
+library(tokenizers)
+
+# Example text from Mad Hatter's tea party scene
+mad_hatter_scene <- "It's always tea-time, and we've no time to wash the things between whiles."
+
+# Generate bigrams and trigrams
+tokens <- tokens(mad_hatter_scene, what = "word")
+bigrams <- tokens_ngrams(tokens, n = 2)
+trigrams <- tokens_ngrams(tokens, n = 3)
+
+print(paste("Bigrams:", bigrams))
+print(paste("Trigrams:", trigrams))
+```
+
+2. Write a function that counts the frequency of each n-gram in the first chapter.
+
+```{r}
+library(quanteda)
+
+# Function to count n-gram frequency
+ngram_frequency <- function(text, n) {
+  tokens <- tokens(text, what = "word")
+  ngrams <- tokens_ngrams(tokens, n = n)
+  ngram_freq <- dfm(ngrams)
+  return(textstat_frequency(ngram_freq))
+}
+
+first_chapter_bigrams <- ngram_frequency(first_chapter, 2)
+first_chapter_trigrams <- ngram_frequency(first_chapter, 3)
+
+print(paste("First chapter bigrams:", head(first_chapter_bigrams, 10)))
+print(paste("First chapter trigrams:", head(first_chapter_trigrams, 10)))
+```
+
+### Text Length and Complexity
+1. Calculate the average word length and sentence length in the first chapter.
+
+```{r}
+library(tokenizers)
+
+# Calculate average word length and sentence length
+average_word_length <- function(text) {
+  words <- unlist(tokenize_words(text))
+  return(mean(nchar(words)))
+}
+
+average_sentence_length <- function(text) {
+  sentences <- tokenize_sentences(text)
+  return(mean(sapply(sentences, function(sentence) length(unlist(tokenize_words(sentence))))))
+}
+
+avg_word_length <- average_word_length(first_chapter)
+avg_sentence_length <- average_sentence_length(first_chapter)
+
+print(paste("Average word length:", avg_word_length))
+print(paste("Average sentence length:", avg_sentence_length))
+```
+
+2. Write a function that computes the Flesch Reading Ease score of the book's first chapter.
+
+```{r}
+library(stringr)
+
+# Compute Flesch Reading Ease score
+flesch_reading_ease <- function(text) {
+  words <- unlist(tokenize_words(text))
+  sentences <- tokenize_sentences(text)
+  syllables <- sum(str_count(words, "[aeiouy]+"))
+  ASL <- length(words) / length(sentences)
+  ASW <- syllables / length(words)
+  return(206.835 - 1.015 * ASL - 84.6 * ASW)
+}
+
+flesch_score <- flesch_reading_ease(first_chapter)
+print(paste("Flesch Reading Ease score:", flesch_score))
+```
+
+### Collocation and Terminology Extraction
+1. Identify and print the most common collocations in the Chapter VII: A Mad Tea-Party.
+
+```{r}
+library(quanteda)
+
+seventh_chapter <- strsplit(text, "CHAPTER")[[1]][8]
+
+# Find collocations
+tokens <- tokens(seventh_chapter, what = "word")
+collocations <- textstat_collocations(tokens, size = 2, min_count = 2)
+
+print(paste("Collocations:", head(collocations, 10)))
+```
+
+2. Write a function that extracts key terms from a selected chapter based on their frequency and context.
+
+```{r}
+library(quanteda)
+
+# Function to extract key terms
+extract_key_terms <- function(text, top_n = 20) {
+  tokens <- tokens(text, what = "word")
+  dfm <- dfm(tokens)
+  freq <- textstat_frequency(dfm)
+  return(head(freq, top_n))
+}
+
+key_terms <- extract_key_terms(first_chapter)
+print(paste("Key terms:", key_terms))
+```
+
+3. Plot the frequency distribution of these key terms using ggplot2.
+
+```{r}
+library(ggplot2)
+
+# Plotting the results
+plot_key_terms <- function(key_terms) {
+  ggplot(key_terms, aes(x = reorder(feature, frequency), y = frequency)) +
+    geom_bar(stat = "identity", fill = "skyblue") +
+    labs(title = "Top Key Terms in Text", x = "Terms", y = "Frequency") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+# Plot key terms
+plot_key_terms(key_terms)
+```
+
+4. Remove punctuations and stopwords and redo the plot
+
+```{r}
+library(quanteda)
+library(stopwords)
+
+# Function to extract key terms and remove punctuation
+extract_key_terms <- function(text, top_n = 20) {
+  tokens <- tokens(text, what = "word", remove_punct = TRUE)
+  tokens <- tokens_remove(tokens, stopwords("en"))
+  dfm <- dfm(tokens)
+  freq <- textstat_frequency(dfm)
+  return(head(freq, top_n))
+}
+
+# Extract key terms
+key_terms <- extract_key_terms(first_chapter, top_n = 20)
+print(paste("Key terms:", key_terms))
+```
+
+```{r}
+# Plotting the results
+plot_key_terms <- function(key_terms) {
+  ggplot(key_terms, aes(x = reorder(feature, frequency), y = frequency)) +
+    geom_bar(stat = "identity", fill = "skyblue") +
+    labs(title = "Top Key Terms in Text", x = "Terms", y = "Frequency") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+# Plot key terms
+plot_key_terms(key_terms)
+```
+````

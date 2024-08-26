@@ -1,0 +1,192 @@
+# *Advanced Text Analysis in R - Supervised ML*
+
+## Table of Contents
+
+## Mock data ([to top](#))
+
+```{r}
+sports_texts <- c(
+  "The game was exciting and the team played well.",
+  "He scored a goal in the last minute of the match.",
+  "The championship game was a huge success.",
+  "The player was awarded the best athlete of the year.",
+  "The coach strategized brilliantly to win the match.",
+  "The referee made a controversial decision during the game.",
+  "Fans were thrilled by the player's performance.",
+  "The tournament featured several outstanding matches.",
+  "The athlete set a new record in the competition.",
+  "The team's defense was solid throughout the game."
+)
+
+technology_texts <- c(
+  "The new smartphone model was released last week.",
+  "The software update improved the performance of the device.",
+  "The tech conference showcased the latest innovations.",
+  "Artificial intelligence is transforming various industries.",
+  "The company launched a groundbreaking new gadget.",
+  "The latest laptop model features a powerful processor.",
+  "The startup developed an innovative mobile application.",
+  "Blockchain technology is revolutionizing finance.",
+  "The device comes with an enhanced security system.",
+  "The company invested heavily in research and development."
+)
+```
+
+## Load libraries ([to top](#))
+
+```{r}
+library(tidyverse)
+library(caret)
+library(tm)
+library(SnowballC)
+library(e1071)
+library(randomForest)
+library(naivebayes)
+library(ggplot2)
+```
+
+## Pre-processing ([to top](#))
+
+```{r}
+# For number of sentences in each text, we create the same number of labels
+labels <- c(rep('sports', length(sports_texts)), rep('technology', length(technology_texts)))
+
+# Combine both texts
+texts <- c(sports_texts, technology_texts)
+
+# Combine texts and labels
+combined <- data.frame(texts, labels)
+# Shuffle data
+set.seed(42)
+combined <- combined[sample(nrow(combined)),]
+
+# Convert labels to binary format
+label_dict <- c('sports' = 0, 'technology' = 1)
+combined$labels <- as.factor(combined$labels)
+```
+
+We split data into training and test sets.
+
+```{r}
+# Split into training and test sets
+set.seed(42)
+trainIndex <- createDataPartition(combined$labels, p = .75, 
+                                  list = FALSE, 
+                                  times = 1)
+train_data <- combined[trainIndex,]
+test_data <- combined[-trainIndex,]
+
+# Create a corpus
+corpus <- Corpus(VectorSource(train_data$texts))
+corpus <- tm_map(corpus, content_transformer(tolower))
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, removeNumbers)
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+corpus <- tm_map(corpus, stemDocument)
+
+# Create Document-Term Matrix
+dtm <- DocumentTermMatrix(corpus)
+dtm <- removeSparseTerms(dtm, 0.99)
+
+# Convert to matrix
+X_train <- as.matrix(dtm)
+y_train <- train_data$labels
+
+# Process test data
+corpus_test <- Corpus(VectorSource(test_data$texts))
+corpus_test <- tm_map(corpus_test, content_transformer(tolower))
+corpus_test <- tm_map(corpus_test, removePunctuation)
+corpus_test <- tm_map(corpus_test, removeNumbers)
+corpus_test <- tm_map(corpus_test, removeWords, stopwords("english"))
+corpus_test <- tm_map(corpus_test, stemDocument)
+
+dtm_test <- DocumentTermMatrix(corpus_test, control = list(dictionary = Terms(dtm)))
+X_test <- as.matrix(dtm_test)
+y_test <- test_data$labels
+```
+
+## Naive Bayes ([to top](#naive))
+
+```{r}
+# Train Naive Bayes model
+nb_clf <- naive_bayes(X_train, y_train)
+
+# Predict on test data
+y_pred_nb <- predict(nb_clf, X_test)
+
+# Confusion Matrix
+confusionMatrix(y_pred_nb, y_test)
+
+# Feature importance
+feature_importance <- abs(nb_clf$tables$`1` - nb_clf$tables$`0`)
+sorted_indices <- order(feature_importance, decreasing = TRUE)
+sorted_feature_importance <- feature_importance[sorted_indices]
+sorted_feature_names <- colnames(X_train)[sorted_indices]
+
+# Plot the top N most important features
+N <- 20
+top_features <- data.frame(
+  Feature = sorted_feature_names[1:N],
+  Importance = sorted_feature_importance[1:N]
+)
+
+ggplot(top_features, aes(x = reorder(Feature, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  coord_flip() +
+  labs(title = "Top 20 Most Important Features", x = "Features", y = "Importance")
+```
+
+## Support Vector Machine ([to top](#svm))
+
+```{r}
+# Train SVM model
+svm_clf <- svm(X_train, y_train, kernel = "linear")
+
+# Predict on test data
+y_pred_svm <- predict(svm_clf, X_test)
+
+# Confusion Matrix
+confusionMatrix(y_pred_svm, y_test)
+```
+
+## KNN ([to top](#knn))
+
+```{r}
+# Train KNN model
+knn_clf <- train(X_train, y_train, method = "knn", tuneLength = 5)
+
+# Predict on test data
+y_pred_knn <- predict(knn_clf, X_test)
+
+# Confusion Matrix
+confusionMatrix(y_pred_knn, y_test)
+```
+
+## Decision Tree ([to top](#dt))
+
+```{r}
+# Train Decision Tree model
+dt_clf <- rpart(labels ~ ., data = train_data, method = "class")
+
+# Plot the Decision Tree
+rpart.plot(dt_clf)
+
+# Predict on test data
+y_pred_dt <- predict(dt_clf, test_data, type = "class")
+
+# Confusion Matrix
+confusionMatrix(y_pred_dt, y_test)
+```
+
+## Random Forest ([to top](#rf))
+
+```{r}
+# Train Random Forest model
+rf_clf <- randomForest(X_train, y_train, ntree = 100)
+
+# Predict on test data
+y_pred_rf <- predict(rf_clf, X_test)
+
+# Confusion Matrix
+confusionMatrix(y_pred_rf, y_test)
+```

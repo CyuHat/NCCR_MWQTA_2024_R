@@ -1,0 +1,174 @@
+---
+Title: Methods Workshop in Quantitative Text Analysis Translated in R
+Author: [Jisu Kim](https://github.com/jisukimmmm) 
+update: 21/03/2024
+---
+
+## Introduction to R language - exercies
+
+### Basic Syntax and Operations:
+1. Write a program to calculate the area of a triangle given its base and height.
+2. Create a program that converts kilometers per hour to meters per second.
+3. Write a Python script that takes a string as input and prints its reverse.
+
+### Conditional Statements and Loops:
+1. Create a program that checks whether a given year is a leap year or not.
+2. Write a Python script to find the sum of all numbers between 1 and 1000 that are divisible by both 3 and 5.
+3. Implement a program to print the first 10 terms of the geometric progression series: 2, 6, 18, 54, ...
+
+### Lists and List Operations:
+1. Create a program to find the largest and smallest elements in a list.
+2. Write a Python script to find the intersection of two lists.
+3. Implement a program to shuffle a deck of cards represented as a list.
+
+### Strings and String Operations:
+1. Write a Python script to capitalize the first letter of each word in a sentence.
+2. Create a program to find the most frequent character in a given string.
+3. Implement a program to check if a given string contains only digits.
+
+### Functions:
+1. Create a function to check whether a given number is a perfect square or not.
+2. Implement a function to reverse the elements of a list in place.
+3. Create a function to calculate the mean (average) of a list of numbers.
+
+### File Handling:
+1. Create a program to read a CSV file containing student scores and calculate their average (Use Pandas package).
+2. Write a Python script to find and print all lines containing a specific word in a text file.
+3. Implement a program to count the number of words in a text file.
+
+### Plotting:
+1. Histogram of Student Scores: Create a histogram showing the distribution of student scores.
+2. Boxplot of Student Scores: Generate a boxplot to visualize the spread and central tendency of student scores.
+3. Scatter Plot of Student Scores: Create a scatter plot to explore the relationship between student scores and student IDs.
+
+1. Calculate the area of a triangle:
+
+```{r}
+
+```
+
+2. Program to convert kilometers per hour to meters per second:
+
+```{r}
+
+```
+
+3. R script to reverse a string:
+
+```{r}
+
+```
+
+### Conditional Statements and Loops:
+1. Check if a year is a leap year:
+
+```{r}
+
+```
+
+2. R script to find the sum of all numbers between 1 and 1000 that are divisible by both 3 and 5:
+
+```{r}
+
+```
+
+3. Program to print the first 10 terms of the geometric progression series: 2, 6, 18, 54, ...
+
+```{r}
+
+```
+
+### Lists and List Operations:
+1. Find the largest and smallest elements in a list:
+
+```{r}
+
+```
+
+2. R script to find the intersection of two lists:
+
+```{r}
+
+```
+
+3. Program to shuffle a deck of cards represented as a list:
+
+```{r}
+
+```
+
+### Strings and String Operations:
+1. Capitalize the first letter of each word in a sentence:
+
+```{r}
+
+```
+
+2. Program to find the most frequent character in a given string:
+
+```{r}
+
+```
+
+3. Program to check if a given string contains only digits:
+
+```{r}
+
+```
+
+### Functions:
+1. Check if a number is a perfect square:
+
+```{r}
+
+```
+
+2. Implement a function to reverse the elements of a list in place:
+
+```{r}
+
+```
+
+3. Create a function to calculate the mean (average) of a list of numbers:
+
+```{r}
+
+```
+
+### File Handling:
+1. Read a CSV file containing student scores and calculate their average (Use Pandas package):
+
+```{r}
+
+```
+
+2. Write an R script to find and print all lines containing a specific word in a text file:
+
+```{r}
+
+```
+
+3. Implement a program to count the number of words in a text file:
+
+```{r}
+
+```
+
+### Plotting:
+1. Histogram of Student Scores:
+
+```{r}
+
+```
+
+2. Boxplot of Student Scores:
+
+```{r}
+
+```
+
+3. Scatter Plot of Student Scores:
+
+```{r}
+
+```

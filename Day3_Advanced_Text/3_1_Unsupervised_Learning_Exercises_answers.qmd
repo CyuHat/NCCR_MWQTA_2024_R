@@ -1,0 +1,875 @@
+# *Advanced Text analysis in Python - Unsupervised ML - Exercises*
+
+In this exercise, we will explore various unsupervised learning techniques 
+We use 20 Newsgroups dataset, focusing on three specific ategories: 'talk.politics.guns', 'comp.graphics', and 'sci.space'. These texts provide rich and varied content that is ideal for practicing unsupervised learning methods on text data. It may take some time to run them all. Feel free to use part of the data to carry out the exercises.
+
+## PCA Exercise
+
+- Perform Principal Component Analysis (PCA) on the TF-IDF vectors of sentences on 'talk.politics.guns' and "comp.graphics". 
+- Visualize the first two principal components and color-code the sentences.
+  
+## 2. Clusters
+### 2.1 K-means Exercise
+- Apply K-means clustering to the sentence embeddings on 'comp.graphics', and 'sci.space' categories.
+- Determine the optimal number of clusters using the elbow method and silhouette score.
+- Visualize the clusters and interpret the results.
+
+### 2.2 MClust
+- Implement Model-based clustering on the data using TF-IDF vectors. Use the 'talk.politics.guns' and 'sci.space' categories.
+- Identify the clusters and compare them with different categories to see how they group together.
+- Discuss if the clustering makes sense contextually.
+
+### 2.3 Hierarchical Clustering
+- Use hierarchical clustering on the sentence embeddings using the "politics" category.
+- Create a dendrogram and identify major clusters.
+
+## 3. Co-occurrence Matrix
+
+- Tokenize the text and build the co-occurrence matrix for "politics" and "sci.space" data.
+- Visualize the matrix as a heatmap.
+- Compare the co-occurrence patterns between the "politics" and "sci.space".
+- Discuss any interesting word relationships or differences.
+
+## 4. Word Embeddings
+
+### 4.1 Word2Vec Exercise
+- Train a Word2Vec model on the whole data.
+- Find and visualize the embeddings for the top 10 most frequent words from each category.
+- Explore word analogies and nearest neighbors for selected words.
+
+## 5. Similarity
+
+- Calculate the cosine similarity between the "sci.space" and "comp.graphics" using TF-IDF vectors.
+- Identify and discuss which articles are most similar between the two data.
+
+## 6. Pointwise Mutual Information (PMI)
+
+- Calculate the PMI for word pairs in 'comp.graphics'. Focus on the first 30 texts.
+- Identify the top 10 word pairs with the highest PMI in each category and analyze their significance in the context of the story.
+
+## 7. Topic Modelling
+
+### 7.1 Latent Semantic Analysis (LSA) Exercise
+- Apply LSA on the topic of "politics".
+- Identify and interpret the top 5 topics.
+
+### 7.2 Latent Dirichlet Allocation (LDA) Exercise
+- Perform LDA on the data, treating each category as a document.
+- Determine the optimal number of topics using coherence scores.
+- Display the top words for each topic.
+- Discuss how well the topics represent the content of the data.
+
+## Answers
+
+Sure, here is the translation of the provided Python tutorial to an R tutorial, keeping the RMarkdown syntax and the text between chunks of code:
+
+## Load libraries
+
+```{r}
+library(tm)
+library(SnowballC)
+library(tidyverse)
+library(ggplot2)
+library(text)
+library(cluster)
+library(factoextra)
+library(mclust)
+```
+
+### 1. PCA Exercise
+- Perform Principal Component Analysis (PCA) on the TF-IDF vectors of sentences. Use ['talk.politics.guns', 'comp.graphics'] categories
+- Visualize the first two principal components and color-code the sentences.
+
+```{r}
+# Load 20 newsgroups data
+categories <- c('talk.politics.guns', 'comp.graphics')
+newsgroups <- fetch_20newsgroups(subset = 'train', categories = categories, remove = c('headers', 'footers', 'quotes'))
+
+# Preprocess data
+preprocess_text <- function(text) {
+  # Remove email addresses
+  text <- gsub('\\S+@\\S+', '', text)
+  # Tokenize and remove stopwords
+  text <- tolower(text)
+  text <- removePunctuation(text)
+  text <- removeNumbers(text)
+  text <- removeWords(text, stopwords("en"))
+  text <- stripWhitespace(text)
+  return(text)
+}
+
+processed_texts <- sapply(newsgroups$data, preprocess_text)
+```
+
+```{r}
+# TF-IDF Vectorization
+vectorizer <- VectorSource(processed_texts)
+corpus <- Corpus(vectorizer)
+tdm <- TermDocumentMatrix(corpus, control = list(weighting = weightTfIdf, stopwords = TRUE, minWordLength = 2))
+X <- as.matrix(tdm)
+
+# PCA Exercise
+pca <- prcomp(X, scale. = TRUE)
+X_reduced <- pca$x[, 1:3]
+
+# Visualization
+colors <- c('red', 'green')
+category_labels <- factor(newsgroups$target, labels = categories)
+df <- data.frame(X_reduced, category = category_labels)
+
+ggplot(df, aes(x = PC1, y = PC2, color = category)) +
+  geom_point() +
+  labs(title = 'PCA on TF-IDF Vectors', x = 'Principal Component 1', y = 'Principal Component 2') +
+  theme_minimal()
+```
+
+```{r}
+# Perform PCA
+pca <- prcomp(X, scale. = TRUE)
+pca_result <- pca$x[, 1:3]
+
+# Create a 3D plot
+library(rgl)
+plot3d(pca_result[, 1], pca_result[, 2], pca_result[, 3], col = as.numeric(category_labels), size = 5)
+title3d('3D PCA of Dataset', 'Principal Component 1', 'Principal Component 2', 'Principal Component 3')
+```
+
+### 1.1 K-means Exercise
+- Apply K-means clustering to the sentence embeddings on 'comp.graphics', and 'sci.space' categories.
+- Determine the optimal number of clusters using the elbow method and silhouette score.
+- Visualize the clusters and interpret the results.
+
+```{r}
+# Load 20 newsgroups data
+sci <- fetch_20newsgroups(subset = 'train', categories = 'sci.space', remove = c('headers', 'footers', 'quotes'))
+comp <- fetch_20newsgroups(subset = 'train', categories = 'comp.graphics', remove = c('headers', 'footers', 'quotes'))
+
+# Concatenate the data
+data <- c(sci$data, comp$data)
+
+# Preprocess data
+processed_texts <- sapply(data, preprocess_text)
+```
+
+```{r}
+# Convert text data to TF-IDF vectors
+vectorizer <- VectorSource(processed_texts)
+corpus <- Corpus(vectorizer)
+tdm <- TermDocumentMatrix(corpus, control = list(weighting = weightTfIdf, stopwords = TRUE, minWordLength = 2))
+X <- as.matrix(tdm)
+
+# Apply K-means clustering
+apply_kmeans <- function(X, num_clusters) {
+  kmeans(X, centers = num_clusters, nstart = 25)
+}
+
+determine_optimal_clusters <- function(X) {
+  wcss <- numeric()
+  silhouette_scores <- numeric()
+  for (i in 2:10) {
+    kmeans_result <- kmeans(X, centers = i, nstart = 25)
+    wcss <- c(wcss, kmeans_result$tot.withinss)
+    silhouette_scores <- c(silhouette_scores, mean(silhouette(kmeans_result$cluster, dist(X))[, 3]))
+  }
+  
+  par(mfrow = c(1, 2))
+  plot(2:10, wcss, type = 'b', pch = 19, frame = FALSE, xlab = 'Number of clusters', ylab = 'WCSS', main = 'Elbow Method For Optimal Number of Clusters')
+  plot(2:10, silhouette_scores, type = 'b', pch = 19, frame = FALSE, xlab = 'Number of clusters', ylab = 'Silhouette Score', main = 'Silhouette Scores For Different Numbers of Clusters')
+}
+
+determine_optimal_clusters(X)
+```
+
+```{r}
+# Apply K-means with the chosen number of clusters
+num_clusters <- 2  # Choose the number based on the elbow method plot
+kmeans_result <- apply_kmeans(X, num_clusters)
+
+# Visualize the clusters using PCA
+pca <- prcomp(X, scale. = TRUE)
+X_pca <- pca$x[, 1:2]
+
+df <- data.frame(X_pca, cluster = factor(kmeans_result$cluster))
+
+ggplot(df, aes(x = PC1, y = PC2, color = cluster)) +
+  geom_point() +
+  labs(title = 'K-means Clustering of Text Data', x = 'PCA Component 1', y = 'PCA Component 2') +
+  theme_minimal()
+```
+
+```{r}
+# Interpret the results
+cluster_centers <- kmeans_result$centers
+terms <- Terms(tdm)
+
+for (i in 1:num_clusters) {
+  cat(sprintf("Cluster %d:\n", i))
+  top_terms <- sort(cluster_centers[i, ], decreasing = TRUE)[1:10]
+  cat(paste(names(top_terms), collapse = ', '), "\n")
+  cat(rep('-', 50), "\n")
+}
+```
+
+Sure, here is the translation of the provided Python tutorial to an R tutorial, keeping the RMarkdown syntax and the text between chunks of code:
+
+### 2.1 MCluster
+- Implement Model-based clustering on the data using TF-IDF vectors. Use the 'talk.politics.guns' and 'sci.space' categories.
+- Identify the clusters and compare them with different categories to see how they group together.
+- Discuss if the clustering makes sense contextually.
+
+```{r}
+library(tm)
+library(SnowballC)
+library(tidyverse)
+library(ggplot2)
+library(text)
+library(cluster)
+library(factoextra)
+library(mclust)
+
+# Load the 20 Newsgroups dataset
+categories <- c('talk.politics.guns', 'sci.space')
+newsgroups <- fetch_20newsgroups(subset = 'all', categories = categories, remove = c('headers', 'footers', 'quotes'))
+texts <- newsgroups$data[1:1000]
+true_labels <- newsgroups$target[1:1000]
+
+# Preprocess the text data and convert to TF-IDF features
+preprocess_text <- function(text) {
+  text <- gsub('\\S+@\\S+', '', text)  # Remove email addresses
+  text <- tolower(text)
+  text <- removePunctuation(text)
+  text <- removeNumbers(text)
+  text <- removeWords(text, stopwords("en"))
+  text <- stripWhitespace(text)
+  return(text)
+}
+
+processed_texts <- sapply(texts, preprocess_text)
+
+vectorizer <- VectorSource(processed_texts)
+corpus <- Corpus(vectorizer)
+tdm <- TermDocumentMatrix(corpus, control = list(weighting = weightTfIdf, stopwords = TRUE, minWordLength = 2))
+X <- as.matrix(tdm)
+```
+
+```{r}
+determine_optimal_clusters <- function(X, true_labels) {
+  rand <- numeric()
+  silhouette_scores <- numeric()
+  for (n_clusters in 2:10) {  # Silhouette score is not defined for 1 cluster
+    gmm <- Mclust(X, G = n_clusters)
+    gmm_labels <- gmm$classification
+    rand <- c(rand, adjustedRandIndex(true_labels, gmm_labels))
+    silhouette_scores <- c(silhouette_scores, mean(silhouette(gmm_labels, dist(X))[, 3]))
+  }
+  
+  par(mfrow = c(1, 2))
+  plot(2:10, rand, type = 'b', pch = 19, frame = FALSE, xlab = 'Number of clusters', ylab = 'RAND', main = 'Adjusted Rand index For Optimal Number of Clusters')
+  plot(2:10, silhouette_scores, type = 'b', pch = 19, frame = FALSE, xlab = 'Number of clusters', ylab = 'Silhouette Score', main = 'Silhouette Scores For Different Numbers of Clusters')
+}
+
+determine_optimal_clusters(X, true_labels)
+```
+
+```{r}
+# Apply the Gaussian Mixture Model for clustering
+n_clusters <- 2
+gmm <- Mclust(X, G = n_clusters)
+gmm_labels <- gmm$classification
+
+# Reduce dimensionality for visualization
+pca <- prcomp(X, scale. = TRUE)
+X_pca <- pca$x[, 1:2]
+
+# Plot the PCA results
+df <- data.frame(X_pca, cluster = factor(gmm_labels))
+
+ggplot(df, aes(x = PC1, y = PC2, color = cluster)) +
+  geom_point() +
+  labs(title = 'GMM Clustering with PCA', x = 'PCA Component 1', y = 'PCA Component 2') +
+  theme_minimal()
+```
+
+### 2.3 Hierarchical Clustering
+- Use hierarchical clustering on the sentence embeddings using the "politics" category.
+- Create a dendrogram and identify major clusters.
+
+```{r}
+library(tm)
+library(SnowballC)
+library(tidyverse)
+library(ggplot2)
+library(text)
+library(cluster)
+library(factoextra)
+
+# Load 20 newsgroups data
+categories <- c('talk.politics.guns')
+newsgroups <- fetch_20newsgroups(subset = 'train', categories = categories, remove = c('headers', 'footers', 'quotes'))
+
+# Preprocess data
+preprocess_text <- function(text) {
+  text <- gsub('\\S+@\\S+', '', text)  # Remove email addresses
+  text <- tolower(text)
+  text <- removePunctuation(text)
+  text <- removeNumbers(text)
+  text <- removeWords(text, stopwords("en"))
+  text <- stripWhitespace(text)
+  return(text)
+}
+
+data_politics <- newsgroups$data[1:50]
+processed_texts <- sapply(data_politics, preprocess_text)
+```
+
+```{r}
+# Vectorize the text data using TF-IDF
+vectorizer <- VectorSource(processed_texts)
+corpus <- Corpus(vectorizer)
+tdm <- TermDocumentMatrix(corpus, control = list(weighting = weightTfIdf, stopwords = TRUE, minWordLength = 2))
+X <- as.matrix(tdm)
+
+# Perform hierarchical clustering using 'complete' linkage method
+Z <- hclust(dist(X), method = 'complete')
+
+# Create a dendrogram
+plot(Z, labels = 1:length(processed_texts), main = 'Dendrogram for talk.politics.guns', xlab = 'Sample index', ylab = 'Distance')
+
+# Identify clusters
+clusters <- cutree(Z, k = 5)
+
+# Print the clusters and some example sentences from each cluster
+for (cluster in unique(clusters)) {
+  cat(sprintf("Cluster %d:\n", cluster))
+  cluster_indices <- which(clusters == cluster)
+  for (idx in head(cluster_indices, 3)) {  # Print first 3 sentences from each cluster as an example
+    cat(sprintf("- %s...\n", substr(data_politics[idx], 1, 100)))  # Print the first 100 characters
+  }
+  cat(rep('-', 50), "\n")
+}
+```
+
+```{r}
+library(cluster)
+
+best_threshold <- NULL
+best_score <- -1
+
+# Try different thresholds and compute silhouette scores
+for (threshold in seq(0.1, 2.0, length.out = 20)) {
+  clusters <- cutree(Z, h = threshold)
+  if (length(unique(clusters)) > 1) {
+    score <- silhouette(clusters, dist(X))[, 3] %>% mean()
+    if (score > best_score) {
+      best_score <- score
+      best_threshold <- threshold
+    }
+  }
+}
+
+cat(sprintf("Best threshold: %f, Silhouette Score: %f\n", best_threshold, best_score))
+```
+
+## 3. Co-occurrence Matrix
+
+- Tokenize the text and build the co-occurrence matrix for "politics" and "sci.space" data.
+- Visualize the matrix as a heatmap.
+- Compare the co-occurrence patterns between the "politics" and "sci.space".
+- Discuss any interesting word relationships or differences.
+
+```{r}
+library(tm)
+library(SnowballC)
+library(tidyverse)
+library(ggplot2)
+library(text)
+library(cluster)
+library(factoextra)
+
+# Load 20 newsgroups data
+sci <- fetch_20newsgroups(subset = 'train', categories = 'sci.space', remove = c('headers', 'footers', 'quotes'))
+poli <- fetch_20newsgroups(subset = 'train', categories = 'talk.politics.guns', remove = c('headers', 'footers', 'quotes'))
+
+# Take first 30 rows of data for each category
+data_sci_space <- sci$data[1:30]
+data_politics <- poli$data[1:30]
+
+# Preprocess data
+preprocess_text <- function(text) {
+  text <- gsub('\\S+@\\S+', '', text)  # Remove email addresses
+  text <- tolower(text)
+  text <- removePunctuation(text)
+  text <- removeNumbers(text)
+  text <- removeWords(text, stopwords("en"))
+  text <- stripWhitespace(text)
+  return(text)
+}
+
+# Tokenize the data
+tokenized_sci_space <- sapply(data_sci_space, preprocess_text)
+tokenized_politics <- sapply(data_politics, preprocess_text)
+```
+
+```{r}
+# Function to build co-occurrence matrix
+build_cooccurrence_matrix <- function(tokenized_texts, window_size = 5) {
+  vocab <- unique(unlist(strsplit(tokenized_texts, " ")))
+  vocab <- setNames(seq_along(vocab), vocab)
+  cooccurrence_matrix <- matrix(0, nrow = length(vocab), ncol = length(vocab))
+  
+  for (text in tokenized_texts) {
+    words <- unlist(strsplit(text, " "))
+    for (i in seq_along(words)) {
+      if (words[i] %in% names(vocab)) {
+        context <- words[max(1, i - window_size):min(length(words), i + window_size)]
+        for (context_word in context) {
+          if (context_word %in% names(vocab)) {
+            cooccurrence_matrix[vocab[words[i]], vocab[context_word]] <- cooccurrence_matrix[vocab[words[i]], vocab[context_word]] + 1
+            cooccurrence_matrix[vocab[context_word], vocab[words[i]]] <- cooccurrence_matrix[vocab[context_word], vocab[words[i]]] + 1
+          }
+        }
+      }
+    }
+  }
+  
+  return(list(matrix = cooccurrence_matrix, vocab = vocab))
+}
+
+# Build co-occurrence matrices for both categories
+cooccurrence_matrix_sci_space <- build_cooccurrence_matrix(tokenized_sci_space)
+cooccurrence_matrix_politics <- build_cooccurrence_matrix(tokenized_politics)
+```
+
+```{r}
+# Visualize the co-occurrence matrix as a heatmap
+plot_heatmap <- function(matrix, vocab, title) {
+  words <- names(vocab)
+  heatmap(matrix[1:30, 1:30], Rowv = NA, Colv = NA, labRow = words[1:30], labCol = words[1:30], main = title, scale = "none", col = heat.colors(256))
+}
+
+plot_heatmap(cooccurrence_matrix_sci_space$matrix, cooccurrence_matrix_sci_space$vocab, 'Co-occurrence Matrix (sci.space)')
+plot_heatmap(cooccurrence_matrix_politics$matrix, cooccurrence_matrix_politics$vocab, 'Co-occurrence Matrix (talk.politics.guns)')
+```
+
+```{r}
+# Compare co-occurrence patterns
+compare_cooccurrence_patterns <- function(matrix1, vocab1, matrix2, vocab2) {
+  common_words <- intersect(names(vocab1), names(vocab2))
+  if (length(common_words) == 0) {
+    cat("No common words to compare.\n")
+    return()
+  }
+  
+  for (word in common_words) {
+    idx1 <- vocab1[[word]]
+    idx2 <- vocab2[[word]]
+    cooccurrences1 <- matrix1[idx1, ]
+    cooccurrences2 <- matrix2[idx2, ]
+    top_words1 <- names(sort(cooccurrences1, decreasing = TRUE))[1:10]
+    top_words2 <- names(sort(cooccurrences2, decreasing = TRUE))[1:10]
+    cat(sprintf("Word: %s\n", word))
+    cat(sprintf("Top co-occurring words in sci.space: %s\n", paste(top_words1, collapse = ', ')))
+    cat(sprintf("Top co-occurring words in talk.politics.guns: %s\n", paste(top_words2, collapse = ', ')))
+    cat(rep('-', 50), "\n")
+  }
+}
+
+compare_cooccurrence_patterns(cooccurrence_matrix_sci_space$matrix, cooccurrence_matrix_sci_space$vocab, cooccurrence_matrix_politics$matrix, cooccurrence_matrix_politics$vocab)
+
+# Discuss interesting word relationships or differences
+# This step will depend on the output of the comparison
+```
+
+Here is the translation of the provided Python tutorial to an R tutorial, keeping the RMarkdown syntax and the text between chunks of code:
+
+## 4. Word Embeddings
+
+### 4.1 Word2Vec Exercise
+- Train a Word2Vec model on the data.
+- Find and visualize the embeddings for the top 10 most frequent words from each category.
+- Explore word analogies and nearest neighbors for selected words.
+
+```{r}
+library(textTinyR)
+library(tm)
+library(SnowballC)
+library(tidyverse)
+library(ggplot2)
+library(wordVectors)
+```
+
+```{r}
+# Load 20 newsgroups data
+categories <- c('comp.graphics', 'sci.space', 'talk.politics.guns')
+newsgroups <- fetch_20newsgroups(subset = 'train', categories = categories, remove = c('headers', 'footers', 'quotes'))
+
+# Take first 30 rows of data for each category
+data_sci_space <- newsgroups$data[newsgroups$target == 'sci.space'][1:30]
+data_comp_graphics <- newsgroups$data[newsgroups$target == 'comp.graphics'][1:30]
+data_politics <- newsgroups$data[newsgroups$target == 'talk.politics.guns'][1:30]
+
+# Preprocess data
+preprocess_text <- function(text) {
+  text <- gsub('\\S+@\\S+', '', text)  # Remove email addresses
+  text <- gsub('[^a-zA-Z0-9\\s]', '', text)  # Remove non-alphanumeric characters
+  tokens <- unlist(strsplit(tolower(text), '\\s+'))
+  filtered_tokens <- tokens[!tokens %in% stopwords("en")]
+  return(filtered_tokens)
+}
+```
+
+```{r}
+# Train Word2Vec model for each category
+models <- list()
+categories <- c('sci.space', 'comp.graphics', 'talk.politics.guns')
+data_list <- list(data_sci_space, data_comp_graphics, data_politics)
+
+for (i in seq_along(categories)) {
+  category <- categories[i]
+  data_category <- data_list[[i]]
+  tokenized_data_category <- lapply(data_category, preprocess_text)
+  writeLines(unlist(lapply(tokenized_data_category, paste, collapse = " ")), con = paste0(category, ".txt"))
+  model <- train_word2vec(paste0(category, ".txt"), output_file = paste0(category, "_model.bin"), vectors = 100, window = 5, threads = 4, min_count = 1)
+  models[[category]] <- model
+}
+```
+
+```{r}
+# Visualize embeddings for the top words
+for (category in names(models)) {
+  model <- models[[category]]
+  vocab <- model$vocab
+  word_freq <- model$word_count
+  sorted_words <- sort(word_freq, decreasing = TRUE)
+  top_words <- names(sorted_words)[1:10]
+  word_vectors <- model[top_words, ]
+  
+  df <- data.frame(word_vectors)
+  df$word <- top_words
+  
+  ggplot(df, aes(x = V1, y = V2, label = word)) +
+    geom_point(color = 'blue', size = 3) +
+    geom_text(vjust = 1.5, hjust = 1.5) +
+    labs(title = paste("Word Embeddings for Top 10 Words in Category:", category), x = "Dimension 1", y = "Dimension 2") +
+    theme_minimal()
+}
+```
+
+## 5. Similarity
+
+- Calculate the cosine similarity between the "sci.space" and "comp.graphics" using TF-IDF vectors.
+- Identify and discuss which articles are most similar between the two data.
+
+```{r}
+library(tm)
+library(SnowballC)
+library(tidyverse)
+library(ggplot2)
+library(text)
+library(cluster)
+library(factoextra)
+library(proxy)
+
+# Load 20 newsgroups data
+categories <- c('comp.graphics', 'sci.space')
+newsgroups <- fetch_20newsgroups(subset = 'train', categories = categories, remove = c('headers', 'footers', 'quotes'))
+
+# Take first 30 rows of data for each category
+data_sci_space <- newsgroups$data[newsgroups$target == 'sci.space'][1:30]
+data_comp_graphics <- newsgroups$data[newsgroups$target == 'comp.graphics'][40:70]
+
+# Concatenate the data
+data <- c(data_sci_space, data_comp_graphics)
+
+# Preprocess data
+preprocess_text <- function(text) {
+  text <- gsub('\\S+@\\S+', '', text)  # Remove email addresses
+  text <- gsub('\\b\\d+\\b', '', text)  # Remove numbers
+  text <- gsub('\\b\\d+[a-zA-Z]+\\b|\\b[a-zA-Z]+\\d+\\b', '', text)  # Remove numbers linked with letters
+  tokens <- unlist(strsplit(tolower(text), '\\s+'))
+  filtered_tokens <- tokens[!tokens %in% stopwords("en")]
+  return(paste(filtered_tokens, collapse = ' '))
+}
+
+processed_texts <- sapply(data, preprocess_text)
+```
+
+```{r}
+# TF-IDF Vectorization
+vectorizer <- VectorSource(processed_texts)
+corpus <- Corpus(vectorizer)
+tdm <- TermDocumentMatrix(corpus, control = list(weighting = weightTfIdf, stopwords = TRUE, minWordLength = 2))
+X <- as.matrix(tdm)
+
+# Calculate cosine similarity
+similarity_matrix <- proxy::simil(X, method = "cosine")
+```
+
+```{r}
+# Identify most similar articles
+max_similarities <- apply(similarity_matrix, 1, max)
+most_similar_indices <- apply(similarity_matrix, 1, which.max)
+```
+
+```{r}
+# Calculate the indices of the most similar and dissimilar pairs
+most_similar_idx <- which(similarity_matrix == max(similarity_matrix), arr.ind = TRUE)[1, ]
+most_dissimilar_idx <- which(similarity_matrix == min(similarity_matrix), arr.ind = TRUE)[1, ]
+
+# Print the most similar pair
+cat("Most similar pair:\n")
+cat(rep("-", 100), "\n")
+cat("Text from 'sci.space':", data[most_similar_idx[1]], "\n")
+cat(rep("-", 100), "\n")
+cat("Text from 'comp.graphics':", data[most_similar_idx[2]], "\n")
+cat(rep("-", 100), "\n")
+cat("Similarity score:", similarity_matrix[most_similar_idx], "\n")
+cat(rep("-", 100), "\n")
+
+# Print the most dissimilar pair
+cat("\nMost dissimilar pair:\n")
+cat(rep("-", 100), "\n")
+cat("Text from 'sci.space':", data[most_dissimilar_idx[1]], "\n")
+cat(rep("-", 100), "\n")
+cat("Text from 'comp.graphics':", data[most_dissimilar_idx[2]], "\n")
+cat(rep("-", 100), "\n")
+cat("Similarity score:", similarity_matrix[most_dissimilar_idx], "\n")
+```
+
+## 6. Pointwise Mutual Information (PMI)
+
+- Calculate the PMI for word pairs in 'comp.graphics'.
+- Identify the top 10 word pairs with the highest PMI in each category and analyze their significance in the context of the story.
+
+```{r}
+library(tm)
+library(SnowballC)
+library(tidyverse)
+library(ggplot2)
+library(text)
+library(cluster)
+library(factoextra)
+library(igraph)
+
+# Load 20 newsgroups data
+category <- 'comp.graphics'
+newsgroups <- fetch_20newsgroups(subset = 'train', categories = category, remove = c('headers', 'footers', 'quotes'))
+
+# Preprocess data
+preprocess_text <- function(text) {
+  text <- gsub('\\S+@\\S+', '', text)  # Remove email addresses
+  text <- gsub('\\b\\d+\\b', '', text)  # Remove numbers
+  text <- gsub('\\b\\d+[a-zA-Z]+\\b|\\b[a-zA-Z]+\\d+\\b', '', text)  # Remove numbers linked with letters
+  tokens <- unlist(strsplit(tolower(text), '\\s+'))
+  filtered_tokens <- tokens[!tokens %in% stopwords("en")]
+  return(paste(filtered_tokens, collapse = ' '))
+}
+
+processed_texts <- sapply(newsgroups$data[1:30], preprocess_text)
+```
+
+```{r}
+# Tokenize the preprocessed texts into words
+tokenized_texts <- strsplit(processed_texts, '\\s+')
+
+# Flatten the list of tokenized texts into a single list of words
+all_words <- unlist(tokenized_texts)
+
+# Create a BigramCollocationFinder from the tokenized texts
+finder <- textTinyR::bigram_collocation_finder(all_words)
+
+# Calculate PMI for each bigram
+pmi_scores <- finder$score_ngrams(textTinyR::pmi)
+```
+
+```{r}
+# Print the top 10 word pairs with the highest PMI
+cat("Top 10 word pairs with the highest PMI:\n")
+for (i in 1:10) {
+  cat(sprintf("%d. %s: %.2f\n", i, paste(pmi_scores$ngrams[i, ], collapse = " "), pmi_scores$scores[i]))
+}
+```
+
+```{r}
+# Get the top 10 word pairs with the highest PMI
+top_word_pairs <- pmi_scores$ngrams[1:10, ]
+
+# Create a graph
+G <- graph.empty(directed = FALSE)
+
+# Add nodes for each word in the top word pairs
+for (i in 1:nrow(top_word_pairs)) {
+  G <- add_vertices(G, nv = 2, name = top_word_pairs[i, ])
+}
+
+# Add edges between the top word pairs
+for (i in 1:nrow(top_word_pairs)) {
+  G <- add_edges(G, c(top_word_pairs[i, 1], top_word_pairs[i, 2]))
+}
+
+# Plot the graph
+plot(G, vertex.size = 30, vertex.label.cex = 0.8, vertex.label.color = "black", vertex.color = "skyblue", edge.width = 2, main = "Top 10 Word Pairs Network Graph")
+```
+
+Here is the translation of the provided Python tutorial to an R tutorial, keeping the RMarkdown syntax and the text between chunks of code:
+
+## 7. Topic Modelling
+
+### 7.1 Latent Semantic Analysis (LSA) Exercise
+- Apply LSA on the topic of "politics".
+- Identify and interpret the top 5 topics.
+
+```{r}
+library(tm)
+library(SnowballC)
+library(tidyverse)
+library(ggplot2)
+library(textTinyR)
+
+# Load 20 newsgroups data
+category <- 'talk.politics.guns'
+newsgroups <- fetch_20newsgroups(subset = 'train', categories = category, remove = c('headers', 'footers', 'quotes'))
+
+# Preprocess data
+preprocess_text <- function(text) {
+  return(tolower(text))
+}
+
+processed_texts <- sapply(newsgroups$data, preprocess_text)
+
+# TF-IDF Vectorization
+vectorizer <- VectorSource(processed_texts)
+corpus <- Corpus(vectorizer)
+tdm <- TermDocumentMatrix(corpus, control = list(weighting = weightTfIdf, stopwords = TRUE, minWordLength = 2))
+X <- as.matrix(tdm)
+
+# LSA
+lsa <- textTinyR::LSA$new(n_topics = 5)
+lsa$fit_transform(X)
+
+# Identify and interpret the top 5 topics
+terms <- Terms(tdm)
+for (i in 1:5) {
+  topic <- lsa$components[i, ]
+  top_terms <- terms[order(topic, decreasing = TRUE)[1:5]]
+  cat(sprintf("Topic %d: %s\n", i, paste(top_terms, collapse = ", ")))
+}
+```
+
+### 7.2 Latent Dirichlet Allocation (LDA) Exercise
+- Perform LDA on the data, treating each category as a document.
+- Determine the optimal number of topics using coherence scores.
+- Display the top words for each topic.
+- Discuss how well the topics represent the content of the data.
+
+Note. This may take some time
+
+```{r}
+library(topicmodels)
+library(tm)
+library(SnowballC)
+library(tidyverse)
+library(ggplot2)
+library(ldatuning)
+
+# Load 20 newsgroups data
+comp <- fetch_20newsgroups(subset = 'train', categories = 'comp.graphics', remove = c('headers', 'footers', 'quotes'))
+sci <- fetch_20newsgroups(subset = 'train', categories = 'sci.space', remove = c('headers', 'footers', 'quotes'))
+politics <- fetch_20newsgroups(subset = 'train', categories = 'talk.politics.guns', remove = c('headers', 'footers', 'quotes'))
+
+# Take first 30 rows of data for each category
+data_sci_space <- sci$data[1:30]
+data_comp_graphics <- comp$data[1:30]
+data_politics <- politics$data[1:30]
+
+# Preprocess data
+preprocess_text <- function(text) {
+  text <- gsub('\\S+@\\S+', '', text)  # Remove email addresses
+  text <- gsub('[^a-zA-Z0-9\\s]', '', text)  # Remove non-alphanumeric characters
+  tokens <- unlist(strsplit(tolower(text), '\\s+'))
+  filtered_tokens <- tokens[!tokens %in% stopwords("en")]
+  return(filtered_tokens)
+}
+
+# Tokenize and preprocess the data for each category
+tokenized_data_per_category <- list()
+for (category_data in list(data_comp_graphics, data_sci_space, data_politics)) {
+  tokenized_category_data <- lapply(category_data, preprocess_text)
+  tokenized_data_per_category <- append(tokenized_data_per_category, list(tokenized_category_data))
+}
+
+# Flatten the list of tokenized data within each category
+flat_tokenized_data_per_category <- lapply(tokenized_data_per_category, unlist)
+
+# Combine documents within each category into a single document
+combined_documents_per_category <- sapply(flat_tokenized_data_per_category, paste, collapse = " ")
+
+# Create Corpus and Document-Term Matrix
+corpora <- lapply(combined_documents_per_category, function(doc) {
+  Corpus(VectorSource(doc))
+})
+dtms <- lapply(corpora, function(corpus) {
+  DocumentTermMatrix(corpus, control = list(weighting = weightTfIdf, stopwords = TRUE, minWordLength = 2))
+})
+
+# Define a function to compute coherence scores for different numbers of topics
+compute_coherence_scores <- function(dtm, num_topics_range) {
+  coherence_scores <- sapply(num_topics_range, function(num_topics) {
+    lda_model <- LDA(dtm, k = num_topics, control = list(seed = 42))
+    coherence <- mean(ldatuning::coherence(lda_model, dtm, measure = "c_v"))
+    return(coherence)
+  })
+  return(coherence_scores)
+}
+
+# Define a range of numbers of topics to evaluate
+num_topics_range <- 2:10
+
+# Compute coherence scores for each category
+coherence_scores_per_category <- lapply(dtms, compute_coherence_scores, num_topics_range)
+
+# Plot coherence scores for each category
+plot_coherence_scores <- function(coherence_scores, category_index) {
+  plot(num_topics_range, coherence_scores, type = "b", pch = 19, col = category_index,
+       xlab = "Number of Topics", ylab = "Coherence Score", main = paste("Category", category_index))
+}
+
+par(mfrow = c(1, 3))
+for (i in 1:length(coherence_scores_per_category)) {
+  plot_coherence_scores(coherence_scores_per_category[[i]], i)
+}
+```
+
+```{r}
+# Function to display top words for each topic
+display_top_words <- function(lda_model, num_words = 10) {
+  terms <- terms(lda_model, num_words)
+  for (i in 1:nrow(terms)) {
+    cat(sprintf("Topic %d:\n", i))
+    cat(paste(terms[i, ], collapse = ", "), "\n\n")
+  }
+}
+
+# Compute and display the topics for each category
+optimal_num_topics <- 4
+for (i in 1:length(dtms)) {
+  lda_model <- LDA(dtms[[i]], k = optimal_num_topics, control = list(seed = 42))
+  cat(sprintf("Category %d - Top words per topic:\n", i))
+  display_top_words(lda_model)
+  cat(strrep("-", 40), "\n")
+}
+```
+
+```{r}
+# Example visualization using the last model as a sample
+# Plot topics using LDAvis (if LDAvis is installed)
+library(LDAvis)
+library(servr)
+
+lda_model <- LDA(dtms[[3]], k = optimal_num_topics, control = list(seed = 42))
+json <- createJSON(phi = posterior(lda_model)$terms, theta = posterior(lda_model)$topics, 
+                   doc.length = rowSums(as.matrix(dtms[[3]])), 
+                   vocab = colnames(as.matrix(dtms[[3]])), 
+                   term.frequency = colSums(as.matrix(dtms[[3]])))
+serVis(json)
+```

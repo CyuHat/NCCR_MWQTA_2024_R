@@ -1,0 +1,73 @@
+## Local LLM
+
+```{r}
+library(readr)
+
+df <- read_csv("./elonmusk_tweets.csv")
+
+print(df)
+```
+
+```{r}
+# Example: reuse your existing OpenAI setup
+library(httr)
+library(jsonlite)
+
+# Point to the local server
+base_url <- "http://localhost:1234/v1"
+api_key <- "lm-studio"
+
+# Function to create a chat completion
+create_chat_completion <- function(model, messages, temperature = 0.7) {
+  url <- paste0(base_url, "/chat/completions")
+  headers <- add_headers(
+    `Authorization` = paste("Bearer", api_key),
+    `Content-Type` = "application/json"
+  )
+  body <- toJSON(list(
+    model = model,
+    messages = messages,
+    temperature = temperature
+  ), auto_unbox = TRUE)
+  
+  response <- POST(url, headers, body = body)
+  content <- content(response, "parsed")
+  return(content$choices[[1]]$message$content)
+}
+
+# Example usage
+completion <- create_chat_completion(
+  model = "model-identifier",
+  messages = list(
+    list(role = "system", content = "Always answer in rhymes."),
+    list(role = "user", content = "Introduce yourself.")
+  )
+)
+
+print(completion)
+```
+
+```{r}
+# Function to get ChatGPT response
+get_chatgpt_response <- function(prompt) {
+  response <- create_chat_completion(
+    model = "model-identifier",  # or "gpt-4" if you have access
+    messages = list(
+      list(role = "system", content = "You are a helpful assistant."),
+      list(role = "user", content = prompt)
+    ),
+    temperature = 0.7  # Adjust the temperature based on the creativity you need
+  )
+  return(gsub("\\. ", ".\n", gsub("! ", "!\n", response)))
+}
+
+# Main loop to interact with the user
+repeat {
+  user_input <- readline(prompt = "Enter a prompt (or 'exit' to quit): ")
+  if (tolower(user_input) == 'exit') {
+    break
+  }
+  response <- get_chatgpt_response(user_input)
+  cat("LM Studio:", response, "\n")
+}
+```

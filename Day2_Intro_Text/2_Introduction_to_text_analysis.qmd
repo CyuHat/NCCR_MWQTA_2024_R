@@ -1,0 +1,415 @@
+---
+Title: Methods Workshop in Quantitative Text Analysis Translated in R
+Author: [Jisu Kim](https://github.com/jisukimmmm) 
+update: 21/03/2024
+---
+
+## 1. R's built-in string manipulation functionality ([to top](#mani))
+R's built-in string manipulation functionality is very useful for a wide range of text processing tasks.
+
+```{r}
+text <- "R is a powerful programming language. R is popular for web development, data analysis, artificial intelligence, and more."
+class(text)
+```
+
+Index of first instance of string 'R' inside text using `gregexpr` (-1 if not found)
+
+```{r}
+index_first <- gregexpr("R", text)[[1]][1]
+print(paste("First occurrence of 'R':", index_first))  # Output: 1
+```
+
+Index of last instance of string 'R' inside text using `gregexpr` (-1 if not found)
+
+```{r}
+index_last <- tail(gregexpr("R", text)[[1]], 1)
+print(paste("Last occurrence of 'R':", index_last))  # Output: 46
+```
+
+You can combine the words of the text using `paste` into a string using `|` as the glue
+
+```{r}
+separator <- " | "
+words <- c("R", "is", "fun")
+joined_text <- paste(words, collapse = separator)
+print(paste("Joined text:", joined_text))  # Output: R | is | fun
+```
+
+Split text into a list using `strsplit` wherever a space is found (whitespace by default)
+
+```{r}
+split_text <- strsplit(text, " ")[[1]]
+print(paste("Split text by space:", split_text))
+```
+
+Split text into a list of strings, one per line using `strsplit`
+
+```{r}
+multi_line_text <- "R is powerful.\nR is popular."
+split_lines <- strsplit(multi_line_text, "\n")[[1]]
+print(paste("Split lines:", split_lines))  # Output: ['R is powerful.', 'R is popular.']
+```
+
+A titlecased version of the string using `tools::toTitleCase`
+
+```{r}
+title_text <- tools::toTitleCase(text)
+print(paste("Title cased text:", title_text))
+```
+
+A copy of text without leading or trailing whitespace using `trimws`
+
+```{r}
+padded_text <- "   R is great!   "
+stripped_text <- trimws(padded_text)
+print(paste("Stripped text:", stripped_text))  # Output: 'R is great!'
+```
+
+Replace instances of "R" with "JavaScript" inside text using `gsub`
+
+```{r}
+replaced_text <- gsub("R", "JavaScript", text)
+print(paste("Text with replacements:", replaced_text))
+```
+
+## 2. Lower and Upper case ([to top](#lower))
+
+In text analysis, changing text to lower case is a common preprocessing step that helps standardize the data.
+
+```{r}
+# Sample text
+text <- "This is an Example Text with CAPITALIZED and lowercase words."
+
+# Convert text to lowercase
+lowercase_text <- tolower(text)
+
+# Display lowercase text
+print(lowercase_text)
+```
+
+```{r}
+# Convert text to uppercase
+uppercase_text <- toupper(text)
+
+# Display uppercase text
+print(uppercase_text)
+```
+
+## 3. Removing ([to top](#puct))
+
+**Punctuation** such as commas, periods, exclamation marks, etc., can be removed from text using `gsub`.
+
+```{r}
+# Sample text with punctuation
+text <- "This text, contains punctuation! Can we remove it?"
+
+# Remove punctuation
+text_without_punctuation <- gsub("[[:punct:]]", "", text)
+
+# Display text without punctuation
+print(text_without_punctuation)
+```
+
+**Stopwords** are common words (e.g., "the", "is", "and") that often do not carry significant meaning in text analysis. Removing stopwords helps to focus on the meaningful content of the text.
+
+```{r}
+library(tm)
+
+# Sample text
+text <- "This is a sample sentence with some stopwords that need to be removed."
+
+# Remove stopwords
+filtered_text <- removeWords(text, stopwords("en"))
+
+# Display filtered text
+print(filtered_text)
+```
+
+**Numbers and Special Characters** are any characters that are not letters or spaces from the text. This helps to eliminate noise and non-textual elements from the data.
+
+```{r}
+# Sample text with numbers and special characters
+text <- "This text contains 1234 numbers and @! special characters %^&*."
+
+# Remove numbers and special characters
+cleaned_text <- gsub("[^[:alpha:] ]", "", text)
+
+# Display cleaned text
+print(cleaned_text)
+```
+
+**whitespaces** : Strip extra whitespace characters (e.g., tabs, newlines) from the text.
+
+```{r}
+# Sample text with extra whitespace
+text <- "    This   is    a   sample   text    with   extra   whitespace.     "
+
+# Remove extra whitespace
+cleaned_text <- gsub("\\s+", " ", trimws(text))
+
+# Display cleaned text
+print(cleaned_text)
+```
+
+## 4. Handling contractions ([to top](#contract))
+**Contractions** like "can't" and "it's" are expanded to their full forms ("cannot" and "it is") to ensure uniformity and consistency in the text data.
+
+```{r}
+library(textclean)
+
+# Sample text with contractions
+text <- "I can't wait to see you tomorrow. It's going to be fun!"
+
+expanded_text <- replace_contraction(text)
+print(expanded_text)
+```
+
+## 5. Spell checking and correction ([to top](#spell))
+Identify and rectify misspelled words.
+
+```{r}
+library(hunspell)
+
+# Sample text with misspelled words
+text <- "Ths is a smple text with misspeled wrds."
+
+# Split the text into words
+words <- unlist(strsplit(text, " "))
+
+# Correct misspelled words
+corrected_words <- hunspell_suggest(words)
+corrected_text <- sapply(1:length(words), function(i) {
+  if (length(corrected_words[[i]]) > 0) {
+    corrected_words[[i]][1]
+  } else {
+    words[i]
+  }
+})
+
+# Join corrected words back into a sentence
+corrected_text <- paste(corrected_text, collapse = " ")
+
+# Display the corrected text
+print(corrected_text)
+```
+
+## 6. Tokenization ([to top](#token))
+Breaking text into words, phrases, symbols, or other meaningful elements.
+
+```{r}
+library(tokenizers)
+
+# Sample text
+text <- "Tokenization is the process of splitting text into words and punctuation marks."
+
+# Tokenize the text into words
+tokens <- tokenize_words(text)
+
+# Display the tokens
+print(tokens)
+```
+
+## 7. Regular expressions ([to top](#re))
+The `stringr` package in R is a powerful library for working with regular expressions.
+
+```{r}
+library(stringr)
+
+word <- 'supercalifragilisticexpialidocious'
+vowels <- str_extract_all(word, "[aeiou]")[[1]]
+print(vowels)
+print(length(vowels))
+```
+
+```{r}
+result <- str_match("123abc", "\\d+")
+print(result[1])
+```
+
+```{r}
+result <- str_match("abc123def", "\\d+")
+print(result[1])
+```
+
+```{r}
+result <- str_extract_all("abc123def456", "\\d+")[[1]]
+print(result)
+```
+
+```{r}
+result <- str_replace_all("abc123def456", "\\d+", "#")
+print(result)
+```
+
+```{r}
+result <- str_split("abc123def456", "\\d+")[[1]]
+print(result)
+```
+
+## 8. Normalisation([to top](#normal))
+The process of converting text into a standard or normalized form.
+
+```{r}
+# Sample text with mixed case
+text <- "This is a Sample Text with MIXED Case."
+
+# Convert text to lowercase
+normalized_text <- tolower(text)
+
+# Display normalized text
+print(normalized_text)
+```
+
+## 9. Stemming([to top](#stem))
+A rule-based technique that removes suffixes from words to extract their root form, known as the stem.
+
+```{r}
+library(SnowballC)
+
+# Sample words
+words <- c("running", "runs", "ran", "runner", "easily")
+
+# Stem the words
+stemmed_words <- wordStem(words, language = "en")
+
+# Display stemmed words
+print(stemmed_words)
+```
+
+## 10. Lemmatization([to top](#lem))
+It aims to reduce words to their base or dictionary form, known as the lemma.
+
+```{r}
+library(textstem)
+
+# Sample words
+words <- c("running", "runs", "ran", "runner", "easily")
+
+# Lemmatize the words
+lemmatized_words <- lemmatize_words(words)
+
+# Display lemmatized words
+print(lemmatized_words)
+```
+
+## 11. Part-of-Speech ([to top](#pos))
+It involves assigning a specific part-of-speech tag to each word in a given text corpus.
+
+```{r}
+library(openNLP)
+library(NLP)
+
+# Sample text
+text <- "R is a leading platform for building programs to work with human language data."
+
+# Annotate the text
+word_ann <- Maxent_Word_Token_Annotator()
+pos_ann <- Maxent_POS_Tag_Annotator()
+annotations <- annotate(text, list(word_ann, pos_ann))
+
+# Extract POS tags
+pos_tags <- sapply(annotations$features, `[[`, "POS")
+
+# Display the POS tags
+print(pos_tags)
+```
+
+## 12. Named Entity Recognition ([to top](#ner))
+A technique used to identify and classify named entities within unstructured text.
+
+```{r}
+library(openNLP)
+library(NLP)
+
+# Sample text with named entities
+text <- "Apple is headquartered in Cupertino, California, and was founded by Steve Jobs, Steve Wozniak, and Ronald Wayne on April 1, 1976."
+
+# Annotate the text
+word_ann <- Maxent_Word_Token_Annotator()
+pos_ann <- Maxent_POS_Tag_Annotator()
+ner_ann <- Maxent_Entity_Annotator()
+annotations <- annotate(text, list(word_ann, pos_ann, ner_ann))
+
+# Extract named entities
+entities <- subset(annotations, type == "entity")
+named_entities <- sapply(entities$features, `[[`, "entity")
+
+# Display named entities
+print(named_entities)
+```
+
+## 13. Bag of Words ([to top](#bow))
+BoW represents text data as a matrix where each row corresponds to a document and each column corresponds to a unique word in the corpus.
+
+```{r}
+library(tm)
+
+# Sample documents
+documents <- c(
+    "This is the first document.",
+    "This document is the second document.",
+    "And this is the third one.",
+    "Is this the first document?"
+)
+
+# Create a Corpus
+corpus <- Corpus(VectorSource(documents))
+
+# Create a Document-Term Matrix
+dtm <- DocumentTermMatrix(corpus)
+
+# Display the Document-Term Matrix
+inspect(dtm)
+```
+
+## 14. Term Frequency-Inverse Document Frequency ([to top](#TFIDF))
+TF-IDF calculates the importance of a word in a document relative to a corpus of documents.
+
+```{r}
+library(tm)
+
+# Create a TfidfTransformer object
+tfidf <- weightTfIdf(dtm)
+
+# Display the TF-IDF representation
+inspect(tfidf)
+```
+
+## 15. Word embeddings  ([to top](#embedding))
+Word embeddings represent words as dense vector representations in a continuous vector space.
+
+```{r}
+library(text2vec)
+library(ggplot2)
+
+# Example corpus of cities and countries
+corpus <- list(
+    c('paris', 'france', 'london', 'uk'),
+    c('london', 'uk', 'berlin', 'germany'),
+    c('berlin', 'germany', 'madrid', 'spain')
+)
+
+# Create a vocabulary
+it <- itoken(corpus, progressbar = FALSE)
+vocab <- create_vocabulary(it)
+
+# Create a vectorizer
+vectorizer <- vocab_vectorizer(vocab)
+
+# Create a TCM (term-co-occurrence matrix)
+tcm <- create_tcm(it, vectorizer, skip_grams_window = 5)
+
+# Train a GloVe model
+glove <- GlobalVectors$new(rank = 50, x_max = 10)
+word_vectors <- glove$fit_transform(tcm, n_iter = 20)
+
+# Perform PCA to reduce dimensionality to 2D
+pca <- prcomp(word_vectors)
+word_vectors_2d <- pca$x[, 1:2]
+
+# Visualize word embeddings
+df <- data.frame(word_vectors_2d, word = rownames(word_vectors_2d))
+ggplot(df, aes(x = PC1, y = PC2, label = word)) +
+    geom_point() +
+    geom_text(vjust = 1.5, hjust = 1.5) +
+    ggtitle("Word Embeddings Visualization")

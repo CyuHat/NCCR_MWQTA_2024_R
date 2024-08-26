@@ -1,0 +1,316 @@
+---
+title: "Introduction to Text Analysis - Exercises"
+author: "Jisu Kim"
+date: "21/03/2024"
+output: html_document
+---
+
+# *Advanced Text analysis in R - Unsupervised ML*
+
+# Load libraries
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(ggplot2)
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(cluster)
+library(factoextra)
+library(text2vec)
+library(lsa)
+library(topicmodels)
+library(ldatuning)
+library(igraph)
+library(ggraph)
+```
+
+## PCA
+
+```{r}
+# Dummy text data
+documents <- c(
+  "Machine learning is a subset of artificial intelligence.",
+  "Deep learning is a subset of machine learning.",
+  "Natural language processing is used in machine learning.",
+  "Computer vision is another subset of machine learning.",
+  "Text data can be analyzed using natural language processing."
+)
+
+# Create a Document-Term Matrix
+dtm <- DocumentTermMatrix(Corpus(VectorSource(documents)))
+
+# Perform PCA
+pca <- prcomp(as.matrix(dtm), scale. = TRUE)
+
+# Print the principal components
+print("Principal components:")
+print(pca$rotation)
+
+# Print the explained variance ratio
+print("\nExplained variance ratio:")
+print(summary(pca)$importance[2,])
+
+# Print the transformed data
+print("\nTransformed data:")
+print(pca$x)
+
+# Plot the PCA results
+fviz_pca_ind(pca, geom.ind = "point", pointshape = 21, pointsize = 2, 
+             fill.ind = "blue", col.ind = "black", repel = TRUE,
+             title = "PCA of TF-IDF Transformed Text Data")
+```
+
+## K-means Clustering
+
+```{r}
+# Example text corpus
+corpus <- c(
+  "I love watching movies.",
+  "The dog barks loudly.",
+  "Cats are great pets.",
+  "Movies can be very entertaining.",
+  "I enjoy long walks with my dog.",
+  "My cat loves to play with yarn.",
+  "The cinema is showing great movies.",
+  "Dog training is essential for good behavior.",
+  "My cat is very affectionate.",
+  "The movie was a thrilling experience.",
+  "Technology is advancing rapidly.",
+  "New smartphones are released every year.",
+  "Artificial intelligence is transforming industries.",
+  "Quantum computing is the future.",
+  "Cybersecurity is a growing concern.",
+  "The new software update improves performance.",
+  "I love playing basketball.",
+  "Soccer is a popular sport worldwide.",
+  "The tennis match was exciting.",
+  "Cricket is enjoyed by many.",
+  "Yoga improves flexibility and strength.",
+  "A balanced diet is crucial for good health.",
+  "Regular exercise keeps you fit.",
+  "Mental health is as important as physical health.",
+  "Healthcare systems are evolving."
+)
+
+# Create a Document-Term Matrix
+dtm <- DocumentTermMatrix(Corpus(VectorSource(corpus)))
+
+# Perform K-means clustering
+set.seed(123)
+k <- 3  # Number of clusters
+kmeans_result <- kmeans(as.matrix(dtm), centers = k)
+
+# Plot the clustered data points
+fviz_cluster(list(data = as.matrix(dtm), cluster = kmeans_result$cluster),
+             geom = "point", ellipse.type = "convex", 
+             ggtheme = theme_minimal(), main = "K-means Clustering of Text Data")
+```
+
+## Elbow Method for Optimal k
+
+```{r}
+# Calculate WCSS for different k
+wcss <- sapply(1:10, function(k) {
+  kmeans(as.matrix(dtm), centers = k, nstart = 10)$tot.withinss
+})
+
+# Plot the Elbow Method graph
+plot(1:10, wcss, type = "b", pch = 19, frame = FALSE, 
+     xlab = "Number of clusters (k)", ylab = "Within-Cluster Sum of Squares (WCSS)",
+     main = "Elbow Method for Optimal k")
+```
+
+## Silhouette Scores for Optimal k
+
+```{r}
+library(cluster)
+
+# Calculate silhouette scores for different k
+silhouette_scores <- sapply(2:10, function(k) {
+  km <- kmeans(as.matrix(dtm), centers = k, nstart = 10)
+  ss <- silhouette(km$cluster, dist(as.matrix(dtm)))
+  mean(ss[, 3])
+})
+
+# Plot the silhouette scores
+plot(2:10, silhouette_scores, type = "b", pch = 19, frame = FALSE, 
+     xlab = "Number of Clusters (k)", ylab = "Silhouette Score",
+     main = "Silhouette Scores for Optimal k")
+```
+
+## K-means Clustering with 8 Clusters
+
+```{r}
+# Perform K-means clustering with 8 clusters
+set.seed(123)
+k <- 8  # Number of clusters
+kmeans_result <- kmeans(as.matrix(dtm), centers = k)
+
+# Calculate the silhouette score
+silhouette_avg <- mean(silhouette(kmeans_result$cluster, dist(as.matrix(dtm)))[, 3])
+print(paste("Silhouette Score for", k, "clusters:", silhouette_avg))
+
+# Plot the clustered data points
+fviz_cluster(list(data = as.matrix(dtm), cluster = kmeans_result$cluster),
+             geom = "point", ellipse.type = "convex", 
+             ggtheme = theme_minimal(), main = "K-means Clustering of Text Data with 8 Clusters")
+```
+
+## Gaussian Mixture Model Clustering
+
+```{r}
+library(mclust)
+
+# Perform Gaussian Mixture Model clustering
+gmm <- Mclust(as.matrix(dtm), G = 3)
+
+# Print clusters labels
+cluster_labels <- c('Cluster 1', 'Cluster 2', 'Cluster 3')
+for (i in 1:3) {
+  cat(paste(cluster_labels[i], ":\n"))
+  cat(paste(corpus[gmm$classification == i], collapse = "\n"), "\n\n")
+}
+```
+
+## Hierarchical Clustering
+
+```{r}
+# Perform hierarchical clustering
+hc <- hclust(dist(as.matrix(dtm)), method = "ward.D2")
+
+# Plot the dendrogram
+plot(hc, labels = corpus, main = "Hierarchical Clustering Dendrogram")
+```
+
+## Co-occurrence Matrix
+
+```{r}
+# Create co-occurrence matrix
+dtm <- DocumentTermMatrix(Corpus(VectorSource(corpus)))
+co_occurrence <- crossprod(as.matrix(dtm))
+diag(co_occurrence) <- 0
+
+# Plot heatmap
+library(reshape2)
+melted_co_occurrence <- melt(co_occurrence)
+ggplot(data = melted_co_occurrence, aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "blue") +
+  theme_minimal() +
+  labs(title = "Co-occurrence Matrix Heatmap", x = "", y = "")
+```
+
+## Word Embeddings with Word2Vec
+
+```{r}
+library(text2vec)
+
+# Example text for Word2Vec
+sample_text <- c(
+  "This is a sample text used for testing Word2Vec models.",
+  "The quick brown fox jumps over the lazy dog.",
+  "The dog barks loudly while the cat quietly observes.",
+  "In the world of machines, artificial intelligence is gaining prominence.",
+  "However, natural language processing remains a challenging task.",
+  "Word embeddings play a crucial role in various NLP applications."
+)
+
+# Tokenize the text
+tokens <- word_tokenizer(sample_text)
+
+# Create Word2Vec model
+it <- itoken(tokens, progressbar = FALSE)
+vocab <- create_vocabulary(it)
+vectorizer <- vocab_vectorizer(vocab)
+tcm <- create_tcm(it, vectorizer, skip_grams_window = 5)
+model <- GloVe$new(rank = 100, x_max = 10)
+word_vectors <- model$fit_transform(tcm, n_iter = 20)
+
+# Print cosine similarity between words
+cos_sim <- sim2(word_vectors, method = "cosine")
+print(cos_sim["sample", "text"])
+print(cos_sim["sample", "machines"])
+```
+
+## Cosine Similarity
+
+```{r}
+# Compute cosine similarity
+cosine_sim <- sim2(as.matrix(dtm), method = "cosine")
+
+# Plot heatmap
+melted_cosine_sim <- melt(cosine_sim)
+ggplot(data = melted_cosine_sim, aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "blue") +
+  theme_minimal() +
+  labs(title = "Cosine Similarity Heatmap", x = "", y = "")
+```
+
+## Pointwise Mutual Information (PMI)
+
+```{r}
+library(text2vec)
+
+# Example corpus
+corpus <- c("cat says meow", "dog says woof")
+
+# Tokenize the corpus
+tokens <- word_tokenizer(corpus)
+
+# Create vocabulary and term-co-occurrence matrix
+it <- itoken(tokens, progressbar = FALSE)
+vocab <- create_vocabulary(it)
+vectorizer <- vocab_vectorizer(vocab)
+tcm <- create_tcm(it, vectorizer, skip_grams_window = 5)
+
+# Calculate PMI
+pmi <- tcm / rowSums(tcm)
+pmi <- pmi / colSums(tcm)
+pmi <- log(pmi * sum(tcm))
+
+# Print PMI scores
+print(pmi)
+```
+
+## Latent Semantic Analysis (LSA)
+
+```{r}
+# Perform LSA
+lsa_model <- lsa(as.matrix(dtm), dims = 2)
+
+# Print the transformed data
+print(lsa_model$tk)
+
+# Plot the LSA results
+plot(lsa_model$tk[, 1], lsa_model$tk[, 2], type = "n")
+text(lsa_model$tk[, 1], lsa_model$tk[, 2], labels = corpus)
+title("Latent Semantic Analysis (LSA)")
+```
+
+## Latent Dirichlet Allocation (LDA)
+
+```{r}
+# Perform LDA
+lda_model <- LDA(dtm, k = 2, control = list(seed = 123))
+
+# Print the topics
+terms(lda_model, 5)
+
+# Visualize the topics
+topics <- tidy(lda_model, matrix = "beta")
+top_terms <- topics %>%
+  group_by(topic) %>%
+  top_n(5, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+ggplot(top_terms, aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Top Terms in Each Topic", x = "", y = "Beta")
+```

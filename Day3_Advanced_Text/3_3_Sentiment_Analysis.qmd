@@ -1,0 +1,117 @@
+# *Advanced Text Analysis in R - Lexicon-based Sentiment Analysis*
+
+## 1. Simple Dictionary-based Model ([to top](#dict))
+
+```{r}
+# Lexicon
+lexicon <- list("good" = 1, "bad" = -1, "neutral" = 0)
+
+# Sentences
+sentence1 <- "The movie was good but the ending was bad"
+sentence2 <- "The movie was good"
+
+# Function to calculate sentiment score for a sentence
+calculate_sentiment_score <- function(sentence) {
+  words <- unlist(strsplit(tolower(sentence), "\\s+"))
+  positive_count <- sum(sapply(words, function(word) lexicon[[word]] > 0, USE.NAMES = FALSE))
+  negative_count <- sum(sapply(words, function(word) lexicon[[word]] < 0, USE.NAMES = FALSE))
+  total_words <- length(words)
+  if (total_words == 0) {
+    return(0)  # Return 0 if no words found
+  }
+  return((positive_count - negative_count) / total_words)
+}
+
+# Calculate sentiment scores for each sentence
+sentiment_score1 <- calculate_sentiment_score(sentence1)
+sentiment_score2 <- calculate_sentiment_score(sentence2)
+
+print(paste("Sentiment score for sentence 1:", sentiment_score1))
+print(paste("Sentiment score for sentence 2:", sentiment_score2))
+```
+
+## 2. VADER ([to top](#vader))
+
+```{r}
+# Install the vader package if not already installed
+# install.packages("vader")
+
+library(vader)
+library(ggplot2)
+
+# Mock text data
+text_data <- c(
+  "I love this product! It's amazing.",
+  "The service was terrible. I'm never coming back.",
+  "The weather today is so-so.",
+  "I'm feeling great today.",
+  "This movie is okay, but not great.",
+  "The food at that restaurant is fantastic!",
+  "I'm really disappointed with the quality of this product.",
+  "The customer support team was very helpful."
+)
+
+# VADER Sentiment Analysis
+vader_scores <- vader_df(text_data)$compound
+
+# Print results
+print("Text Data and VADER Sentiment Scores:")
+for (i in seq_along(text_data)) {
+  print(paste(i, text_data[i], "- Sentiment Score:", round(vader_scores[i], 2)))
+}
+
+# Distribution plot
+ggplot(data.frame(vader_scores), aes(x = vader_scores)) +
+  geom_histogram(bins = 10, fill = 'skyblue', color = 'black') +
+  labs(x = 'Sentiment Score', y = 'Frequency', title = 'Distribution of Sentiment Scores') +
+  theme_minimal()
+```
+
+```{r}
+library(caret)
+
+# Mock labels for the text data (positive, negative, neutral)
+true_labels <- c('positive', 'negative', 'neutral', 'positive', 'neutral', 'positive', 'negative', 'positive')
+
+# Convert VADER scores to labels based on threshold
+vader_labels <- ifelse(vader_scores > 0.05, 'positive', ifelse(vader_scores < -0.05, 'negative', 'neutral'))
+
+# Compute F1 score
+f1 <- F1_Score(true_labels, vader_labels, positive = NULL)
+
+print(paste("F1 Score:", round(f1, 2)))
+```
+
+## 3. TextBlob ([to top](#Textblob))
+
+```{r}
+# Install the text package if not already installed
+# install.packages("text")
+
+library(text)
+
+# TextBlob Sentiment Analysis
+blob_scores <- sapply(text_data, function(text) text::text_sentiment(text)$polarity)
+
+# Print results
+print("Text Data and TextBlob Sentiment Scores:")
+for (i in seq_along(text_data)) {
+  print(paste(i, text_data[i], "- Sentiment Score:", round(blob_scores[i], 2)))
+}
+
+# Distribution plot
+ggplot(data.frame(blob_scores), aes(x = blob_scores)) +
+  geom_histogram(bins = 10, fill = 'skyblue', color = 'black') +
+  labs(x = 'Sentiment Score', y = 'Frequency', title = 'Distribution of Sentiment Scores') +
+  theme_minimal()
+```
+
+```{r}
+# Convert TextBlob scores to labels based on threshold
+textblob_labels <- ifelse(blob_scores > 0.05, 'positive', ifelse(blob_scores < -0.05, 'negative', 'neutral'))
+
+# Compute F1 score
+f1 <- F1_Score(true_labels, textblob_labels, positive = NULL)
+
+print(paste("F1 Score:", round(f1, 2)))
+```

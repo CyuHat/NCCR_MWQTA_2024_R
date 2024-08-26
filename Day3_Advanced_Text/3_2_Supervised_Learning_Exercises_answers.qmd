@@ -1,0 +1,416 @@
+# *Advanced Text analysis in Python - Supervised ML - Exercises*
+
+In this series of exercises, we delve into the fascinating realm of Natural Language Processing (NLP) using two classic literary works: "Alice's Adventures in Wonderland" by Lewis Carroll and "Frankenstein" by Mary Shelley. These exercises focus on various NLP tasks, including Named Entity Recognition (NER), text classification, and feature importance analysis using machine learning algorithms.
+
+We start by preprocessing the text data, extracting relevant features, and labeling entities such as names of characters, locations, and organizations in the first chapters of both books. Next, we explore different machine learning models, including Support Vector Machines (SVMs), Decision Trees (DTs), and Random Forests (RFs), to perform text classification tasks.
+
+# Exercises
+
+1. [Naive Bayes](#naive)
+Document Sorting with Limited Labels: Mix text from "Alice in Wonderland" and "Frankenstein" without labels. Start with a small labeled set. Train Naive Bayes on this set. Then, classify the rest of the text using this model. Keep improving the model by adding confidently classified text to the training set. Check how well the model sorts all the text into "Alice in Wonderland" and "Frankenstein" categories.
+
+For simplicity, let's assume we have manually labeled the books.
+
+2. [Support Vector Machine](#svm)
+From here on, let's just look at the first chapters.
+
+Named Entity Recognition (NER): Train a Support Vector Machine model to perform NER on the text data, identifying and classifying entities such as names of characters, locations, and organizations in both books. Evaluate the performance of the SVM on correctly identifying named entities.
+
+4. [KNN](#knn)
+Text Clustering: Use KNN to cluster similar paragraphs from both books together based on their textual features. Experiment with different distance metrics and values of k to see how they affect the clustering results.
+
+5. [Decision treees](#dt)
+Feature Importance Analysis: Train a decision tree classifier to distinguish between "Alice in Wonderland" and "Frankenstein" chapters. After training, analyze the most important features (e.g., words or word combinations) used by the decision tree to make classification decisions.
+
+6. [Random Forest](#rf)
+Authorship Attribution: Instead of classifying by book, train a random forest classifier to predict the authorship of individual chapters or chunks of text. Use additional texts by the same authors or other similar authors to train the model, and then test it on "Alice in Wonderland" and "Frankenstein" chapters.
+
+## Answers
+
+Here is the translation of the provided Python tutorial to an R tutorial, keeping the RMarkdown syntax and the text between chunks of code:
+
+### Load libraries and data
+
+```{r}
+library(tm)
+library(SnowballC)
+library(tidyverse)
+library(ggplot2)
+library(e1071)
+library(caret)
+library(randomForest)
+library(textTinyR)
+library(spacyr)
+library(quanteda)
+library(quanteda.textmodels)
+library(quanteda.textplots)
+
+# Load text data
+load_text <- function(filename) {
+  text <- readLines(filename, warn = FALSE, encoding = "UTF-8")
+  return(paste(text, collapse = " "))
+}
+
+alice_text <- load_text("alice.txt")
+frankenstein_text <- load_text("frankenstein.txt")
+```
+
+### Preprocess data
+
+```{r}
+preprocess_text <- function(text) {
+  text <- tolower(text)
+  text <- gsub("[^a-zA-Z0-9\\s]", "", text)
+  return(text)
+}
+
+tokenize_sentences <- function(text) {
+  sentences <- unlist(strsplit(text, "\\n\\n"))
+  sentences <- sentences[sentences != ""]
+  return(sentences)
+}
+
+alice_text <- preprocess_text(alice_text)
+frankenstein_text <- preprocess_text(frankenstein_text)
+
+alice_sentences <- tokenize_sentences(alice_text)
+frankenstein_sentences <- tokenize_sentences(frankenstein_text)
+```
+
+# 1. [Naive Bayes](#naive)
+
+```{r}
+# Combine sentences from both books
+combined_sentences <- c(alice_sentences, frankenstein_sentences)
+set.seed(42)
+combined_sentences <- sample(combined_sentences)
+
+# Create labeled dataset (with only a small labeled set)
+labeled_data <- data.frame(
+  text = c(alice_sentences[1:10], frankenstein_sentences[1:10]),
+  label = factor(c(rep("Alice", 10), rep("Frankenstein", 10)))
+)
+
+# Train CountVectorizer and MultinomialNB
+vectorizer <- dfm(labeled_data$text, remove = stopwords("en"), remove_punct = TRUE)
+classifier <- textmodel_nb(vectorizer, labeled_data$label)
+
+# Classify the rest of the text
+test_texts <- combined_sentences[21:50]
+test_vectorizer <- dfm(test_texts, remove = stopwords("en"), remove_punct = TRUE)
+predicted_labels <- predict(classifier, newdata = test_vectorizer)
+
+# Print classification results
+for (i in seq_along(predicted_labels)) {
+  cat(sprintf("Sentence %d: Predicted label - %s\n", i, predicted_labels[i]))
+}
+```
+
+```{r}
+# Get feature names from the dfm
+feature_names <- featnames(vectorizer)
+
+# Get the log probabilities of features given the classes
+log_probabilities <- coef(classifier)
+
+# Zip feature names with their corresponding log probabilities
+feature_probabilities <- data.frame(
+  feature = feature_names,
+  alice_log_prob = log_probabilities[, "Alice"],
+  frankenstein_log_prob = log_probabilities[, "Frankenstein"]
+)
+
+# Sort the features based on their log probabilities for each class
+sorted_features_alice <- feature_probabilities %>% arrange(desc(alice_log_prob))
+sorted_features_frankenstein <- feature_probabilities %>% arrange(desc(frankenstein_log_prob))
+
+# Function to plot feature importance
+plot_feature_importance <- function(sorted_features, class_name) {
+  top_N <- 20
+  features <- sorted_features$feature[1:top_N]
+  probabilities <- sorted_features[[paste0(tolower(class_name), "_log_prob")]][1:top_N]
+  
+  ggplot(data.frame(features, probabilities), aes(x = reorder(features, probabilities), y = probabilities)) +
+    geom_bar(stat = "identity", fill = "skyblue") +
+    coord_flip() +
+    labs(title = paste("Top", top_N, "Features for", class_name), x = "Feature", y = "Log Probability")
+}
+
+# Plot feature importance for 'Alice in Wonderland'
+plot_feature_importance(sorted_features_alice, 'Alice in Wonderland')
+
+# Plot feature importance for 'Frankenstein'
+plot_feature_importance(sorted_features_frankenstein, 'Frankenstein')
+```
+
+# 2. [Support Vector Machine](#svm)
+
+```{r}
+spacy_initialize(model = "en_core_web_sm")
+
+# Annotate text with spacy NER
+doc <- spacy_parse(c(alice_text, frankenstein_text), entity = TRUE)
+
+# Extract features for each token
+extract_features <- function(token, window = 2) {
+  features <- list(
+    text = token$text,
+    lemma = token$lemma,
+    pos = token$pos,
+    tag = token$tag,
+    dep = token$dep,
+    shape = token$shape,
+    is_alpha = token$is_alpha,
+    is_stop = token$is_stop
+  )
+  # Add context features
+  for (i in 1:window) {
+    if (token$token_id - i >= 1) {
+      prev_token <- doc[token$token_id - i, ]
+      features <- c(features, list(
+        paste0("-", i, ":text") = prev_token$text,
+        paste0("-", i, ":lemma") = prev_token$lemma,
+        paste0("-", i, ":pos") = prev_token$pos,
+        paste0("-", i, ":tag") = prev_token$tag
+      ))
+    } else {
+      features <- c(features, list(
+        paste0("-", i, ":text") = "",
+        paste0("-", i, ":lemma") = "",
+        paste0("-", i, ":pos") = "",
+        paste0("-", i, ":tag") = ""
+      ))
+    }
+    if (token$token_id + i <= nrow(doc)) {
+      next_token <- doc[token$token_id + i, ]
+      features <- c(features, list(
+        paste0("+", i, ":text") = next_token$text,
+        paste0("+", i, ":lemma") = next_token$lemma,
+        paste0("+", i, ":pos") = next_token$pos,
+        paste0("+", i, ":tag") = next_token$tag
+      ))
+    } else {
+      features <- c(features, list(
+        paste0("+", i, ":text") = "",
+        paste0("+", i, ":lemma") = "",
+        paste0("+", i, ":pos") = "",
+        paste0("+", i, ":tag") = ""
+      ))
+    }
+  }
+  return(features)
+}
+
+# Prepare data for training
+X <- lapply(1:nrow(doc), function(i) extract_features(doc[i, ]))
+y <- ifelse(doc$entity_type != "", doc$entity_type, "O")
+
+# Convert feature lists to data frame
+X_df <- do.call(rbind, lapply(X, as.data.frame))
+
+# Split data into training and testing sets
+set.seed(42)
+train_indices <- sample(1:nrow(X_df), 0.8 * nrow(X_df))
+X_train <- X_df[train_indices, ]
+X_test <- X_df[-train_indices, ]
+y_train <- y[train_indices]
+y_test <- y[-train_indices]
+
+# Train SVM model
+svm_model <- svm(as.matrix(X_train), y_train, kernel = "linear")
+
+# Evaluate the model
+y_pred <- predict(svm_model, as.matrix(X_test))
+cat("Accuracy:", mean(y_pred == y_test), "\n")
+cat(classification_report(y_test, y_pred))
+
+# Display top 5 most important features (based on weights for linear SVM)
+coefficients <- as.numeric(svm_model$coefs)
+top_features <- order(coefficients, decreasing = TRUE)[1:5]
+for (feature in top_features) {
+  cat("Feature:", colnames(X_train)[feature], "Weight:", coefficients[feature], "\n")
+}
+```
+
+# 3. KNN
+
+```{r}
+# Split the text into paragraphs for Alice in Wonderland
+alice_paragraphs <- unlist(strsplit(alice_text, "\\n\\n"))
+alice_paragraphs <- alice_paragraphs[alice_paragraphs != ""]
+
+# Split the text into paragraphs for Frankenstein
+frankenstein_paragraphs <- unlist(strsplit(frankenstein_text, "\\n\\n"))
+frankenstein_paragraphs <- frankenstein_paragraphs[frankenstein_paragraphs != ""]
+
+# Combine the paragraphs and create labels
+all_paragraphs <- c(alice_paragraphs, frankenstein_paragraphs)
+labels <- factor(c(rep(0, length(alice_paragraphs)), rep(1, length(frankenstein_paragraphs))))
+
+# Vectorize the text data using TF-IDF
+vectorizer <- dfm(all_paragraphs, remove = stopwords("en"), remove_punct = TRUE)
+X_tfidf <- convert(vectorizer, to = "matrix")
+
+# Reduce dimensionality using PCA
+pca <- prcomp(X_tfidf, center = TRUE, scale. = TRUE)
+X_pca <- pca$x[, 1:2]
+
+# Train KNN model
+k <- 5  # You can adjust k as needed
+knn_model <- knn3(X_pca, labels, k = k)
+
+# Plot decision boundaries
+plot_decision_boundaries <- function(X, y, model, title) {
+  x_min <- min(X[, 1]) - 1
+  x_max <- max(X[, 1]) + 1
+  y_min <- min(X[, 2]) - 1
+  y_max <- max(X[, 2]) + 1
+  xx <- seq(x_min, x_max, length.out = 100)
+  yy <- seq(y_min, y_max, length.out = 100)
+  grid <- expand.grid(xx, yy)
+  colnames(grid) <- colnames(X)
+  
+  Z <- predict(model, grid)
+  Z <- as.numeric(Z)
+  
+  ggplot() +
+    geom_tile(data = grid, aes(x = Var1, y = Var2, fill = factor(Z)), alpha = 0.3) +
+    geom_point(data = data.frame(X, y), aes(x = PC1, y = PC2, color = factor(y)), size = 2) +
+    labs(title = title, x = "PCA Component 1", y = "PCA Component 2") +
+    scale_fill_manual(values = c("red", "blue")) +
+    scale_color_manual(values = c("red", "blue"))
+}
+
+# Plot decision boundaries
+plot_decision_boundaries(X_pca, labels, knn_model, title = 'KNN Decision Boundaries with k=5')
+```
+
+# 4. [Decision Trees](#dt)
+
+```{r}
+# Extract the first chapter from "Alice in Wonderland"
+alice_first_chapter <- unlist(strsplit(alice_text, "CHAPTER"))[2]
+
+# Extract the first chapter from "Frankenstein"
+frankenstein_first_chapter_match <- regexpr("(?:\\bLETTER\\b|\\bChapter\\b)", frankenstein_text, ignore.case = TRUE)
+frankenstein_first_chapter_start <- frankenstein_first_chapter_match[1]
+frankenstein_first_chapter <- substr(frankenstein_text, frankenstein_first_chapter_start, nchar(frankenstein_text))
+
+# Preprocess text data
+alice_first_chapter <- preprocess_text(alice_first_chapter)
+frankenstein_first_chapter <- preprocess_text(frankenstein_first_chapter)
+
+# Tokenize sentences    
+alice_sentences <- tokenize_sentences(alice_text)
+frankenstein_sentences <- tokenize_sentences(frankenstein_text)
+
+texts <- c(alice_sentences, frankenstein_sentences)
+labels <- factor(c(rep("Alice", length(alice_sentences)), rep("Frankenstein", length(frankenstein_sentences))))
+
+# Combine texts and labels
+combined <- data.frame(text = texts, label = labels)
+
+# Shuffle data
+set.seed(42)
+combined <- combined[sample(nrow(combined)), ]
+
+# Convert labels to binary format
+label_dict <- c("Alice" = 0, "Frankenstein" = 1)
+y <- as.numeric(factor(combined$label, levels = names(label_dict)))
+
+# Split data into training and test sets
+train_indices <- sample(1:nrow(combined), 0.8 * nrow(combined))
+X_train <- combined$text[train_indices]
+X_test <- combined$text[-train_indices]
+y_train <- y[train_indices]
+y_test <- y[-train_indices]
+
+# Vectorize the text data using TF-IDF
+vectorizer <- dfm(X_train, remove = stopwords("en"), remove_punct = TRUE)
+X_train_tfidf <- convert(vectorizer, to = "matrix")
+
+# Train the Decision Tree classifier
+dt_classifier <- rpart(label ~ ., data = data.frame(X_train_tfidf, label = y_train), method = "class", control = rpart.control(maxdepth = 5, minsplit = 10))
+
+# Plot the decision tree
+rpart.plot(dt_classifier, type = 4, extra = 104, fallen.leaves = TRUE)
+
+# Evaluate the decision tree classifier
+X_test_tfidf <- convert(dfm(X_test, remove = stopwords("en"), remove_punct = TRUE), to = "matrix")
+pred <- predict(dt_classifier, newdata = data.frame(X_test_tfidf), type = "class")
+accuracy <- mean(pred == y_test)
+cat("Accuracy:", accuracy, "\n")
+
+# Extract feature importance
+feature_importance <- dt_classifier$variable.importance
+
+# Display top 5 most important features
+top_features <- names(sort(feature_importance, decreasing = TRUE))[1:5]
+cat("Top 5 most important features:\n")
+for (feature in top_features) {
+  cat("Feature:", feature, "Importance:", feature_importance[feature], "\n")
+}
+```
+
+# 5. [Random Forest](#rf)
+
+```{r}
+# Load the text data
+alice_text <- load_text("alice.txt")
+frankenstein_text <- load_text("frankenstein.txt")
+
+# Split the text into paragraphs for Alice in Wonderland
+alice_paragraphs <- unlist(strsplit(alice_text, "\\n\\n"))
+alice_paragraphs <- alice_paragraphs[alice_paragraphs != ""]
+
+# Split the text into paragraphs for Frankenstein
+frankenstein_paragraphs <- unlist(strsplit(frankenstein_text, "\\n\\n"))
+frankenstein_paragraphs <- frankenstein_paragraphs[frankenstein_paragraphs != ""]
+
+# Create labels for the paragraphs
+alice_labels <- rep(0, length(alice_paragraphs))  # Label 0 for Alice
+frankenstein_labels <- rep(1, length(frankenstein_paragraphs))  # Label 1 for Frankenstein
+
+# Combine the paragraphs and labels
+all_paragraphs <- c(alice_paragraphs, frankenstein_paragraphs)
+all_labels <- factor(c(alice_labels, frankenstein_labels))
+
+# Split data into training and testing sets
+set.seed(42)
+train_indices <- sample(1:length(all_paragraphs), 0.8 * length(all_paragraphs))
+X_train <- all_paragraphs[train_indices]
+X_test <- all_paragraphs[-train_indices]
+y_train <- all_labels[train_indices]
+y_test <- all_labels[-train_indices]
+
+# Vectorize the text data using TF-IDF
+vectorizer <- dfm(X_train, remove = stopwords("en"), remove_punct = TRUE)
+X_train_tfidf <- convert(vectorizer, to = "matrix")
+X_test_tfidf <- convert(dfm(X_test, remove = stopwords("en"), remove_punct = TRUE), to = "matrix")
+
+# Train Random Forest model on original data with limited depth
+rf_classifier <- randomForest(X_train_tfidf, y_train, ntree = 100, maxnodes = 5, importance = TRUE)
+
+# Predict authorship on test data
+y_pred <- predict(rf_classifier, X_test_tfidf)
+
+# Calculate accuracy
+accuracy <- mean(y_pred == y_test)
+cat("Accuracy:", accuracy, "\n")
+
+# Get feature importances
+feature_importances <- importance(rf_classifier)
+feature_names <- colnames(X_train_tfidf)
+
+# Get the indices of the top 5 most important features
+top_indices <- order(feature_importances, decreasing = TRUE)[1:5]
+
+# Print the top 5 most important features
+cat("\nTop 5 Most Important Features:\n")
+for (idx in top_indices) {
+  cat("Feature:", feature_names[idx], "Importance:", feature_importances[idx], "\n")
+}
+
+# Plot one of the trees from the Random Forest
+plot(rf_classifier, main = "Random Forest - One Decision Tree")
+```

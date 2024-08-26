@@ -1,0 +1,713 @@
+---
+Title: Methods Workshop in Quantitative Text Analysis Translated in R
+Author: [Jisu Kim](https://github.com/jisukimmmm) 
+update: 21/03/2024
+---
+
+# *Introduction to R language*
+
+This notebook is for students who are not familiar with R language.
+
+Note that **Many more resources are available on the Web**. Check out this website for more: https://www.w3schools.com/r/default.asp
+
+## Table of Contents
+
+1.  [Basic concepts](#basic)
+2.  [Variables and types](#variables)
+3.  [Operators and comparisons](#operators)
+4.  [Compound types](#compound)
+5.  [Control flow](#Control)
+6.  [Functions](#Functions)
+7.  [Modules](#Modules)
+
+## 1. Basic concepts ([to top](#basic))
+
+R can be used in different text editors, here are from the most preferred to the least preferred:
+
+-   Rstudio
+
+-   Visual Studio Code
+
+-   Jupyter lab/notebook
+
+-   Sublime text /Atom
+
+-   Neovim (only if you are experimented)
+
+R can be run in the following documents:
+
+-   Rscripts (.r)
+
+-   Rmarkdown notebook (.rmd)
+
+-   Quarto notebook (.qmd)
+
+-   Jupyter notebook (.ipynb)
+
+    -   You need to install the R kernel use the [following tutorial](https://github.com/IRkernel/IRkernel).
+
+Run a line (in a script or notebook) using Ctrl/Cmd+Enter and run code cell (in a notebook) by using Ctrl/Cmd+Shift+Enter or pressing the "Play" button in the toolbar above on the "Run button" or on the cell.
+
+To **print out results**, simply write print() with parenthesis, but it is not compulsory in R.
+
+```{r}
+# Make "Hello World!" appear to the console
+print("Hello World!") 
+"Hello World!" # Just the text
+```
+
+Line 1: In R, comments begin with a #. This statement is ignored by the interpreter and serves as documentation for our code. The short cut for this is Ctrl+C or Cmd+C.
+
+Line 2: `print(“Hello World!”)` To print something on the console, print() function is used. This function also adds a newline after our message is printed (unlike in C). Note that in R you can also use the `cat()` function for a more readable version:
+
+```{r}
+print("Hello\nWorld") # print as it is
+cat("Hello\nWorld!") # print a readable version
+```
+
+Note: To see the document related to the function or library in:
+
+-   RStudio: appears automatically or Ctrl+Space
+
+-   VScode: appears automatically or Ctrl+Space or hover the function
+
+-   Jupyter lab/notebook: Shift+Tab.
+
+**Curly brackets**: Like many programming language, R does not care about the spaces because it is always bound to brackets (parentheses, brackets or curly brackets). Indentation is only for aesthetic matter and user are free to indent their code following their taste. For example the indentation of the second `print()` does not break the code since it is in the brackets:
+
+```{r}
+if (3==3){
+    print('TRUE')
+} else {
+print('FALSE')
+}
+```
+
+Rstudio:
+
+-   Code is run inside an environment (R version, project and environment). I can always be stop by pressing the "Stop" button or Ctrl+C shortcut (inside quarto/rmarkdown notebook or a script).
+
+Jupyter lab/notebook:
+
+-   Code is run in a separate process called the Kernel. The Kernel can be interrupted or restarted. Try running the following cell and then hit the "Stop" button in the toolbar above or by clicking the right button on the script in jupyter Lab.
+
+**Indexing** in R starts at 1, which means that the first element in a sequence has an index of 1, the second element has an index of 2, and so on as expected.
+
+```{r}
+# Vector
+number_vector = c(1, 2, 3, 4, 5)
+# List
+number_list = list(1, 2, 3, 4, 5)
+
+# Vector's first element
+number_vector[1]
+# List's first element
+number_list[[1]]
+```
+
+\*Note: You need a double bracket to have access to a list element (see last line of code).
+
+**R reserved words**
+
+R has reserved words that you can use as a variable name (except if you surround it by \`). Otherwise, R is smart enough to know which element your are talking about eventhoug, function, package and variable name have the same name.
+
+```{r}
+# if, else, repeat, while, function, for, in, next, breaks, TRUE, FALSE, NULL, Inf, NA, NaN
+```
+
+## 2. Variables and types [ ](#variables) ()
+
+Variable names in R can contain alphanumerical characters `a-z`, `A-Z`, `0-9` and some special characters such as `_` and `.`. Variable names cannot start with a number (e.g., 22list), or cannot be R reserved words (see above), or cannot contain a space or `-`. If your variable does not respect this rules you can always surround it with `` ` `` and it will works.
+
+Variables can contain different forms such as character (text), integer, or double (float). The variable can contain mix of these different forms.
+
+The assignment operators in R are `<-`, `->` and `=`. R is a dynamically typed language, so we do not need to specify the type of a variable when we create one!
+
+Assigning a value to a new variable already creates the variable:
+
+```{r}
+# variable assignments
+x = 1.0
+y <- 2
+3L -> z
+```
+
+In the last line, we force the creation of integer by adding `L` after a number.
+
+Since value were assigned, the result does not appears. to see it you can just call the variable:
+
+```{r}
+x
+y
+z
+```
+
+You can also have many of them in a single line using `;` to separate them.
+
+```{r}
+x; y; z
+```
+
+Although not explicitly specified, a variable do have a type associated with it. The type is derived from the value it was assigned.
+
+```{r}
+typeof(x) # double
+typeof(y) # double
+typeof(z) # integer
+```
+
+If we assign a new value to a variable, its type can change.
+
+```{r}
+x = "cat"
+typeof(x)
+```
+
+Note: Integer: represents positive or negative whole numbers like 3 or -512. Floating point number (double): represents real numbers like 3.14159 or -2.5. Character string: text.
+
+If we try to use a variable that has not yet been defined we get an `Error`:
+
+```{r}
+#| eval: false
+print(h)
+```
+
+But we can assign the value to a new variable from an existing variable:
+
+```{r}
+h = x
+print(h)
+```
+
+## 3. Operators and comparisons [ ](#operators) ()
+
+Most operators and comparisons in R work as one would expect:
+
+-   Arithmetic operators `+`, `-`, `*`, `/`, `%/%` (integer division), `^` power
+
+```{r}
+1+2
+1-2
+1*2
+1%/%2
+```
+
+```{r}
+1.0+2.0
+1.0-2.0
+1.0*2.0
+1.0%/%2.0
+```
+
+```{r}
+# Integer division of float numbers
+3.0 %/% 2.0
+```
+
+```{r}
+2^2
+```
+
+-   The boolean operators are spelled out as words. Note the use of `&` (and), `!` (not) and `|` (or).
+
+```{r}
+TRUE & FALSE
+```
+
+```{r}
+!False
+```
+
+```{r}
+True | False
+```
+
+-   Comparison operators `>`, `<`, `>=` (greater or equal), `<=` (less or equal), `==` equality.
+
+```{r}
+2>1
+2<1
+```
+
+```{r}
+2>2
+2<2
+```
+
+```{r}
+2>=2
+2<=2
+```
+
+```{r}
+# equality 
+setequal(c(1,2,3), c(3,4,5))
+# are the elements in the left in the vector on the right?
+c(1,2,3) %in% c(3,4,5)
+```
+
+## 4. Compound types: strings, list, sets, tuples and dictionaries [ ](#compound) ()
+
+### Strings
+
+Strings are the variable type that is used for storing text messages. To declare string variables, include quotes; either single or double. E.g:
+
+```{r}
+s = "Hello world"
+typeof(s)
+```
+
+In R, characters are one element of a vector. To collect the length of a character, we need to use a specific function (since `length()` only return on one.
+
+```{r}
+# classic lenght
+nchar(s)
+# print the length of a string (i.e. the number of characters)
+length(s)
+```
+
+```{r}
+# replace a substring in a string with somethign else
+s2 = gsub(s, "world", "test")
+print(s2)
+```
+
+We can index a character in a string using `[]` after the function `strsplit(character, "")[[1]][1]`:
+
+```{r}
+s3 = strsplit(s, "")[[1]]
+s3[1]
+```
+
+Note that in R `head()` allow to do an ordered selection (like `[]`) while `tail()` do the same backwards.
+
+```{r}
+tail(s3, 1)
+```
+
+We can extract a part of a string using the syntax `[start:stop]`, which extracts characters between index `start` and `stop`:
+
+```{r}
+s3[1:4]
+```
+
+### List
+
+Lists are very similar to vector, except that each element can be of any type.
+
+The syntax for creating lists in R is `c(...)`:
+
+```{r}
+string_list = list('spring', 'summer', 'winter', 'fall')
+string_list
+```
+
+```{r}
+integer_list = list(12, 3, 5, 3, 9, 6, 2)
+integer_list
+```
+
+```{r}
+float_list = list(2.3, 4.6, 3.7, 8.3)
+float_list
+```
+
+To access variables in a list:
+
+```{r}
+string_list <- c("a", "b", "c", "d")
+string_list[1] # note that indexing starts at 1 in R!
+tail(string_list, 1) # last item in a list
+string_list[1:3] # we can use the same slicing techniques to manipulate lists as we could use on strings:
+rev(string_list) # slicing notation used to reverse a sequence.
+```
+
+#### Adding, inserting, modifying, and removing elements from lists
+
+```{r}
+# create a new empty list
+l <- list()
+
+# add elements using `append`
+l <- append(l, "A")
+l <- append(l, "d")
+
+print(l)
+```
+
+We can modify lists by assigning new values to elements in the list. In technical jargon, lists are *mutable*.
+
+```{r}
+l[[2]] <- "p"
+
+print(l)
+```
+
+We can insert an element at a specific index using [`append`](command:_github.copilot.openSymbolFromReferences?%5B%22append%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A329%2C%22character%22%3A25%7D%7D%5D%5D "Go to definition")
+
+```{r}
+l <- append(l, "i", 0)
+l <- append(l, "n", 1)
+l <- append(l, "s", 2)
+l <- append(l, "e", 3)
+l <- append(l, "r", 4)
+l <- append(l, "t", 5)
+
+print(l)
+```
+
+Remove elements with [`remove`](command:_github.copilot.openSymbolFromReferences?%5B%22remove%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A357%2C%22character%22%3A22%7D%7D%5D%5D "Go to definition") (based on the item you want to remove)
+
+```{r}
+l <- l[l != "A"]
+
+print(l)
+```
+
+Remove an element with [`del`](command:_github.copilot.openSymbolFromReferences?%5B%22del%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A365%2C%22character%22%3A24%7D%7D%5D%5D "Go to definition") (based on the location of the item you want to remove)
+
+```{r}
+l <- l[-6]
+
+print(l)
+```
+
+### Dictionaries
+
+Dictionaries are also like lists, except that each element is a key-value pair. The syntax for dictionaries is [`list(key1 = value1, ...)`](command:_github.copilot.openSymbolFromReferences?%5B%22list(key1%20%3D%20value1%2C%20...)%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A314%2C%22character%22%3A25%7D%7D%5D%5D "Go to definition"). With a dictionary, you cannot have duplicated keys.
+
+```{r}
+student <- list(hair = c("brown", "pink"), 
+                eye = "black", 
+                height = 172)
+
+print(class(student))
+print(student)
+```
+
+To access keys:
+
+```{r}
+print(names(student))
+```
+
+To access values of the keys:
+
+```{r}
+print(unlist(student))
+```
+
+To access an item of a key:
+
+```{r}
+print(student$eye)
+```
+
+To change the value of a key:
+
+```{r}
+student$eye <- 'blue'
+```
+
+To add a new entry:
+
+```{r}
+student$nationality <- 'Spanish'
+```
+
+```{r}
+print(student)
+```
+
+### Tuples
+
+Tuples are like lists, except that they cannot be modified once created, that is they are *immutable*.
+
+In R, tuples are created using the syntax `c(..., ..., ...)`:
+
+```{r}
+point <- c(10, 20)
+print(point)
+print(class(point))
+```
+
+We can unpack a tuple by assigning it to a comma-separated list of variables:
+
+```{r}
+x <- point[1]
+y <- point[2]
+
+print(paste("x =", x))
+print(paste("y =", y))
+```
+
+If we try to assign a new value to an element in a tuple we get an error:
+
+```{r}
+# point[1] <- 20 # This will give an error because vectors in R are not immutable, but for the sake of example, we assume immutability.
+```
+
+Tuples can have mixed types:
+
+```{r}
+mixed <- list('hello', 2, 2.0)
+print(paste('contains string, integer and float variables in "mixed" variable:', mixed))
+```
+
+### Sets
+
+With a set, it returns unordered variables. It does not return duplicate values. You cannot change items in a set. Unordered means that the returned order of a set is random.
+
+```{r}
+set_ <- unique(c(12, 3, 5, 3, 9, 6, 2, 2))
+print(set_)
+```
+
+### User Input
+
+```{r}
+# Input 
+name <- readline(prompt="What is your name: ")
+print(paste("My name is", name))
+```
+
+## 5. Control Flow
+
+### Conditional statements: if, elif, else
+
+The R syntax for conditional execution of code use the keywords [`if`](command:_github.copilot.openSymbolFromReferences?%5B%22if%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A472%2C%22character%22%3A28%7D%7D%5D%5D "Go to definition"), [`else if`](command:_github.copilot.openSymbolFromReferences?%5B%22else%20if%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A472%2C%22character%22%3A28%7D%7D%5D%5D "Go to definition"), [`else`](command:_github.copilot.openSymbolFromReferences?%5B%22else%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A472%2C%22character%22%3A38%7D%7D%5D%5D "Go to definition"):
+
+```{r}
+statement1 <- FALSE
+statement2 <- FALSE
+
+if (statement1) { # explicitly this means "if statement1 is TRUE"
+    print("statement1 is TRUE")
+} else if (statement2) {
+    print("statement2 is TRUE")
+} else {
+    print("statement1 and statement2 are FALSE")
+}
+```
+
+## Loops
+
+In R, loops can be programmed in a number of different ways. The most common is the [`for`](command:_github.copilot.openSymbolFromReferences?%5B%22for%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A375%2C%22character%22%3A91%7D%7D%5D%5D "Go to definition") loop, which is used together with iterable objects, such as lists. The basic syntax is:
+
+### **[`for`](command:_github.copilot.openSymbolFromReferences?%5B%22for%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A375%2C%22character%22%3A91%7D%7D%5D%5D "Go to definition") loops**:
+
+```{r}
+for (x in c(1, 2, 3)) {
+    print(x)
+}
+```
+
+To iterate over key-value pairs of a dictionary:
+
+```{r}
+for (key in names(student)) {
+    print(paste(key, "=", student[[key]]))
+}
+```
+
+### [`while`](command:_github.copilot.openSymbolFromReferences?%5B%22while%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A508%2C%22character%22%3A5%7D%7D%5D%5D "Go to definition") loops:
+
+```{r}
+i <- 0
+
+while (i < 5) {
+    print(i) 
+    i <- i + 1 # this can abbreviated also as i+=1
+}
+
+print("done")
+```
+
+Note that the [`print("done")`](command:_github.copilot.openSymbolFromReferences?%5B%22print(%5C%22done%5C%22)%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A333%2C%22character%22%3A0%7D%7D%5D%5D "Go to definition") statement is not part of the [`while`](command:_github.copilot.openSymbolFromReferences?%5B%22while%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A508%2C%22character%22%3A5%7D%7D%5D%5D "Go to definition") loop body because of the difference in indentation.
+
+```{r}
+# example of for loop and if statement: 
+# for each value in the list "integer_list" print a value that is greater or equal to 7
+integer_list <- c(5, 7, 9, 3, 8)
+for (x in integer_list) {
+    if (x >= 7) { 
+        print(x)
+    }
+}
+```
+
+## 6. Functions
+
+A function in R is defined using the keyword [`function`](command:_github.copilot.openSymbolFromReferences?%5B%22function%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A532%2C%22character%22%3A2%7D%7D%5D%5D "Go to definition"), followed by a function name, a signature within parentheses `()`, and a curly brace `{`. The following code, with one additional level of indentation, is the function body.
+
+```{r}
+square <- function(x) {
+    # Return the square of x.
+    return(x ^ 2)
+}
+```
+
+```{r}
+square(4)
+```
+
+## 7. Modules
+
+Most of the functionality in R is provided by *packages*. The R Standard Library is a large collection of packages that provides *cross-platform* implementations of common facilities such as access to the operating system, file I/O, string management, network communication, and much more.
+
+To use a package in an R program it first has to be installed. A quickest way is to do it here using the [`install.packages`](command:_github.copilot.openSymbolFromReferences?%5B%22install.packages%22%2C%5B%7B%22uri%22%3A%7B%22%24mid%22%3A1%2C%22fsPath%22%3A%22c%3A%5C%5CUsers%5C%5Chategeki%5C%5CDesktop%5C%5CCODE%5C%5CPython%5C%5CProjets%5C%5CNccr%5C%5CNCCR_MWQTA_2024%5C%5CDay1_Intro_Python%5C%5C1_Introduction_to_R_language.qmd%22%2C%22_sep%22%3A1%2C%22external%22%3A%22file%3A%2F%2F%2Fc%253A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22path%22%3A%22%2Fc%3A%2FUsers%2Fhategeki%2FDesktop%2FCODE%2FPython%2FProjets%2FNccr%2FNCCR_MWQTA_2024%2FDay1_Intro_Python%2F1_Introduction_to_R_language.qmd%22%2C%22scheme%22%3A%22file%22%7D%2C%22pos%22%3A%7B%22line%22%3A550%2C%22character%22%3A109%7D%7D%5D%5D "Go to definition") statement. For example, to install the package `ggplot2`, which is a useful package for plots, we can do:
+
+```{r}
+# install.packages("ggplot2")
+```
+
+To use a package in an R program it first has to be imported. A package can be imported using the `library` statement. For example, to import the package `ggplot2`, which contains many standard plotting functions, we can do:
+
+```{r}
+library(ggplot2)
+```
+
+This includes the whole package and makes it available for use later in the program. For example, we can do:
+
+```{r}
+x <- cos(2 * pi)
+print(x)
+```
+
+```{r}
+print(log(10))
+```
+
+Once a package is imported, we can list the symbols it provides using the `ls` function:
+
+```{r}
+print(ls("package:ggplot2"))
+```
+
+### Plotting with ggplot2
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+```{r}
+x <- seq(1, 10, by=1)
+qplot(x, x+1)
+```
+
+```{r}
+data <- rnorm(500)    # 500 draws from the standard normal distribution
+qplot(data, bins=40, geom="histogram")
+```
+
+## Manipulating data with dplyr
+
+dplyr makes use of this capability to allow DataFrames to be represented as HTML tables.
+
+```{r}
+library(dplyr)
+```
+
+Read a csv file:
+
+```{r}
+df <- read.csv('data.csv')
+```
+
+Display a dataframe:
+
+```{r}
+print(df)
+```
+
+Display the size of your dataframe:
+
+```{r}
+dim(df) # this is number of (rows, columns)
+```
+
+Display the names of columns:
+
+```{r}
+colnames(df)
+```
+
+Create a new column:
+
+```{r}
+# compute the average between Open and Close
+df <- df %>% mutate(mean_value = rowMeans(select(., Open, Close)))
+print(df$mean_value)
+```
+
+```{r}
+# axis=0 refer to columns 
+colMeans(select(df, Open, Close))
+```
+
+Selecting specific rows:
+
+```{r}
+df %>% filter(Close > Open)
+```
+
+Display min and max values:
+
+```{r}
+print(min(df$Date), max(df$Date))
+print(min(df$High), max(df$High))
+```
+
+Find the date when Volume was highest:
+
+```{r}
+df %>% filter(Volume == max(Volume)) %>% select(Date)
+```
+
+Display basic statistics of your dataframe:
+
+```{r}
+summary(df)
+```
+
+**Plots are very easy in ggplot2!**
+
+```{r}
+df %>% ggplot(aes(x=Date)) + 
+  geom_line(aes(y=Open, color="Open")) + 
+  geom_line(aes(y=High, color="High")) + 
+  geom_line(aes(y=Low, color="Low")) + 
+  geom_line(aes(y=Close, color="Close"))
+```
+
+Plotting in subplots:
+
+```{r}
+library(gridExtra)
+p1 <- df %>% ggplot(aes(x=Date)) + 
+  geom_line(aes(y=Open, color="Open")) + 
+  geom_line(aes(y=High, color="High")) + 
+  geom_line(aes(y=Low, color="Low")) + 
+  geom_line(aes(y=Close, color="Close"))
+
+p2 <- df %>% ggplot(aes(x=Date)) + 
+  geom_line(aes(y=Volume, color="Volume"))
+
+grid.arrange(p1, p2, ncol=2)
+```
+
+Boxplot:
+
+```{r}
+df %>% ggplot(aes(x="", y=Close)) + 
+  geom_boxplot()
+```
+
+Log scale:
+
+```{r}
+df %>% ggplot(aes(x="", y=Close)) + 
+  geom_boxplot() + 
+  scale_y_log10()
+```
