@@ -1,7 +1,12 @@
 ---
-Title: Methods Workshop in Quantitative Text Analysis Translated in R
-Author: [Jisu Kim](https://github.com/jisukimmmm) 
-update: 21/03/2024
+title: Methods Workshop in Quantitative Text Analysis Translated in R
+author:
+  - name: Jisu Kim
+    url: https://github.com/jisukimmmm
+  - name: Vestin Hategekimana (translator)
+    url: https://github.com/CyuHat
+date: "21/03/2024"
+format: html
 ---
 
 ## Introduction to R language - exercies

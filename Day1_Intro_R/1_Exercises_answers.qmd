@@ -3,6 +3,8 @@ title: Methods Workshop in Quantitative Text Analysis Translated in R
 author:
   - name: Jisu Kim
     url: https://github.com/jisukimmmm
+  - name: Vestin Hategekimana (translator)
+    url: https://github.com/CyuHat
 date: "21/03/2024"
 format: html
 ---
@@ -52,8 +54,8 @@ height <- 3
 
 triangle <- base * height / 2
 
-print(paste("This is the area:", triangle))
-print(paste("This is the answer", triangle, "and after..."))
+paste("This is the area:", triangle)
+paste("This is the answer", triangle, "and after...")
 ```
 
 2. Program to convert kilometers per hour to meters per second:
@@ -63,7 +65,7 @@ kmph <- 100
 
 ms <- kmph * 1000 / 3600
 
-print(paste("The answer is", ms))
+paste("The answer is", ms)
 ```
 
 3. R script to reverse a string:
@@ -72,7 +74,7 @@ print(paste("The answer is", ms))
 my_text <- "This is a text"
 
 rev_text <- paste(rev(strsplit(my_text, NULL)[[1]]), collapse = "")
-print(rev_text)
+rev_text
 ```
 
 ### Conditional Statements and Loops:
@@ -82,9 +84,9 @@ print(rev_text)
 year <- 3000
 
 if ((year %% 4 == 0 && year %% 100 != 0) || (year %% 400 == 0)) {
-  print("This is a leap year")
+  "This is a leap year"
 } else {
-  print("This is not a leap year")
+  "This is not a leap year"
 }
 ```
 
@@ -122,7 +124,7 @@ number_list <- c(2, 5, 1, 67, 4, 7)
 mini <- min(number_list)
 maxi <- max(number_list)
 
-print(paste("Min:", mini, "Max:", maxi))
+paste("Min:", mini, "Max:", maxi)
 ```
 
 2. R script to find the intersection of two lists:
@@ -133,7 +135,7 @@ list2 <- c(4, 5, 6, 7, 8)
 
 intersection <- intersect(list1, list2)
 
-print(intersection)
+intersection
 ```
 
 3. Program to shuffle a deck of cards represented as a list:
@@ -142,7 +144,7 @@ print(intersection)
 deck <- c("A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K")
 shuffled_deck <- sample(deck)
 
-print(shuffled_deck)
+shuffled_deck
 ```
 
 ### Strings and String Operations:
@@ -152,7 +154,7 @@ print(shuffled_deck)
 sentence <- "this is a sentence"
 capitalized_sentence <- tools::toTitleCase(sentence)
 
-print(capitalized_sentence)
+capitalized_sentence
 ```
 
 2. Program to find the most frequent character in a given string:
@@ -161,7 +163,7 @@ print(capitalized_sentence)
 string <- "this is a string"
 most_frequent_char <- names(sort(table(strsplit(string, NULL)[[1]]), decreasing = TRUE))[1]
 
-print(most_frequent_char)
+most_frequent_char
 ```
 
 3. Program to check if a given string contains only digits:
@@ -171,7 +173,7 @@ string <- "123456"
 
 is_digits <- grepl("^[0-9]+$", string)
 
-print(is_digits)
+is_digits
 ```
 
 ### Functions:
@@ -183,8 +185,8 @@ is_perfect_square <- function(x) {
   return(sqrt_x == floor(sqrt_x))
 }
 
-print(is_perfect_square(16))
-print(is_perfect_square(15))
+is_perfect_square(16)
+is_perfect_square(15)
 ```
 
 2. Implement a function to reverse the elements of a list in place:
@@ -194,7 +196,7 @@ reverse_list <- function(lst) {
   return(rev(lst))
 }
 
-print(reverse_list(c(1, 2, 3, 4, 5)))
+reverse_list(c(1, 2, 3, 4, 5))
 ```
 
 3. Create a function to calculate the mean (average) of a list of numbers:
@@ -204,7 +206,7 @@ calculate_mean <- function(numbers) {
   return(mean(numbers))
 }
 
-print(calculate_mean(c(1, 2, 3, 4, 5)))
+calculate_mean(c(1, 2, 3, 4, 5))
 ```
 
 ### File Handling:
@@ -213,10 +215,11 @@ print(calculate_mean(c(1, 2, 3, 4, 5)))
 ```{r}
 library(readr)
 
-student_scores <- read_csv("student_scores.csv")
+student_scores <- read_csv("Day1_Intro_R/student_scores.csv")
+# student_scores <- read_csv("student_scores.csv")
 average_score <- mean(student_scores$score)
 
-print(average_score)
+average_score
 ```
 
 2. Write an R script to find and print all lines containing a specific word in a text file:
@@ -228,7 +231,7 @@ find_lines_with_word <- function(file_path, word) {
   return(matching_lines)
 }
 
-print(find_lines_with_word("example.txt", "specific_word"))
+find_lines_with_word("Day1_Intro_R/example.txt", "specific_word")
 ```
 
 3. Implement a program to count the number of words in a text file:
@@ -240,7 +243,7 @@ count_words_in_file <- function(file_path) {
   return(length(words))
 }
 
-print(count_words_in_file("example.txt"))
+count_words_in_file("Day1_Intro_R/example.txt")
 ```
 
 ### Plotting:
