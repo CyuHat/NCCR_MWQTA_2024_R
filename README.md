@@ -1,0 +1,1 @@
+This is the R translation of the Quantitative Text analysis class from [jisukimmmm](https://github.com/jisukimmmm). The original Python folder is the following [NCCR_MWQTA_2024](https://github.com/jisukimmmm/NCCR_MWQTA_2024).
