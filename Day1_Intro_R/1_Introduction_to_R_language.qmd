@@ -7,6 +7,7 @@ author:
     url: https://github.com/CyuHat
 date: "21/03/2024"
 format: html
+editor: visual
 ---
 
 # *Introduction to R language*
@@ -20,6 +21,8 @@ Note that **Many more resources are available on the Web**. Check out this websi
 R can be used in different text editors, here are from the most preferred to the least preferred:
 
 -   Rstudio
+
+-   Positron
 
 -   Visual Studio Code
 
@@ -39,11 +42,11 @@ R can be run in the following documents:
 
 -   Jupyter notebook (.ipynb)
 
-    -   You need to install the R kernel use the [following tutorial](https://github.com/IRkernel/IRkernel).
+    -   You need to install the R kernel for Jupyter notebook use the [following tutorial](https://github.com/IRkernel/IRkernel) or you can try the [ark kernel](https://github.com/posit-dev/ark).
 
 Run a line (in a script or notebook) using Ctrl/Cmd+Enter and run code cell (in a notebook) by using Ctrl/Cmd+Shift+Enter or pressing the "Play" button in the toolbar above on the "Run button" or on the cell.
 
-To **print out results**, simply write print() with parenthesis, but it is not compulsory in R.
+To **print out results**, simply write print() with parenthesis, but it is not compulsory in R to output a result.
 
 ```{r}
 # Make "Hello World!" appear to the console
@@ -51,9 +54,9 @@ print("Hello World!")
 "Hello World!" # Just the text
 ```
 
-Line 1: In R, comments begin with a #. This statement is ignored by the interpreter and serves as documentation for our code. The short cut for this is Ctrl+C or Cmd+C.
+*Line 1:* In R, comments begin with a #. This statement is ignored by the interpreter and serves as documentation for our code. The short cut for this is Ctrl+Maj+C or Cmd+Maj+C.
 
-Line 2: `print(“Hello World!”)` To print something on the console, print() function is used. This function also adds a newline after our message is printed (unlike in C). Note that in R you can also use the `cat()` function for a more readable version:
+*Line 2:* `print(“Hello World!”)` To print something on the console, print() function is used. This function also adds a newline after our message is printed (unlike in C). Note that in R you can also use the `cat()` function for a more readable version:
 
 ```{r}
 print("Hello\nWorld") # print as it is
@@ -62,27 +65,27 @@ cat("Hello\nWorld!") # print a readable version
 
 Note: To see the document related to the function or library in:
 
--   RStudio: appears automatically or Ctrl+Space
+-   RStudio: appears automatically
 
 -   VScode: appears automatically or Ctrl+Space or hover the function
 
 -   Jupyter lab/notebook: Shift+Tab.
 
-**Curly brackets**: Like many programming language, R does not care about the spaces because it is always bound to brackets (parentheses, brackets or curly brackets). Indentation is only for aesthetic matter and user are free to indent their code following their taste. For example the indentation of the second `print()` does not break the code since it is in the brackets:
+**Curly brackets**: Like many programming language, R does not care about the spaces because it is always bound to brackets (parentheses, brackets or curly brackets). Indentation is only for aesthetic matter and user are free to indent their code following their taste (unlike Python or Nim that can have indentation error). For example the indentation of the second `print()` does not break the code since it is in the brackets:
 
 ```{r}
 if (3==3){
-  "TRUE"
+  print("TRUE")
 } else {
-  "FALSE"
+                  print("FALSE")
 }
 ```
 
-Rstudio:
+**Rstudio:**
 
--   Code is run inside an environment (R version, project and environment). I can always be stop by pressing the "Stop" button or Ctrl+C shortcut (inside quarto/rmarkdown notebook or a script).
+-   Code is run inside an environment (R version, project and environment). It can always be stop by pressing the "Stop" button or Ctrl+C shortcut (inside quarto/rmarkdown notebook or a script).
 
-Jupyter lab/notebook:
+**Jupyter lab/notebook:**
 
 -   Code is run in a separate process called the Kernel. The Kernel can be interrupted or restarted. Try running the following cell and then hit the "Stop" button in the toolbar above or by clicking the right button on the script in jupyter Lab.
 
@@ -102,9 +105,23 @@ number_list[[1]]
 
 Note: You need a double bracket to have access to a list element (see last line of code).
 
+Tips: You can generate a continuous vector between two values using the signe `:` as follow:
+
+```{r}
+1:10 # 1 to 10
+3:-8 # 3 to -8
+```
+
+You can also decide to use specific steps to get from one value to another using the `seq()` function:
+
+```{r}
+seq(0, 10, 2) # From 0 to 10 by steps of 2
+seq(-5, 5, 5) # From-5 to 5 by steps of 5
+```
+
 **R reserved words**
 
-R has reserved words that you can use as a variable name (except if you surround it by `). Otherwise, R is smart enough to know which element your are talking about eventhoug, function, package and variable name have the same name.
+R has reserved words that you can use as a variable name (except if you surround it by \`). Otherwise, R is smart enough to know which element your are talking about eventhoug, function, package and variable name have the same name.
 
 ```{r}
 # if, else, repeat, while, function, for, in, next, breaks, TRUE, FALSE, NULL, Inf, NA, NaN
@@ -124,7 +141,7 @@ Assigning a value to a new variable already creates the variable:
 # variable assignments
 x = 1.0
 y <- 2
-3L -> z
+3L -> z # 3L is an integer
 ```
 
 In the last line, we force the creation of integer by adding `L` after a number.
@@ -163,28 +180,28 @@ Note: Integer: represents positive or negative whole numbers like 3 or -512. Flo
 If we try to use a variable that has not yet been defined we get an `Error`:
 
 ```{r}
-#| eval: false
+#| eval: false # it is not part of R but quarto to not run the code
 h
 ```
 
 But we can assign the value to a new variable from an existing variable:
 
 ```{r}
-h = x
+h <- x
 h
 ```
 
-## 3. Operators and comparisons [ ](#operators) ()
+## 3. Operators and comparisons
 
 Most operators and comparisons in R work as one would expect:
 
 -   Arithmetic operators `+`, `-`, `*`, `/`, `%/%` (integer division), `^` power
 
 ```{r}
-1 + 2
-1 - 2
-1 * 2
-1 %/% 2
+1 + 2 # Addition
+1 - 2 # Substraction
+1 * 2 # Multiplication
+1 %/% 2 # Modulo
 ```
 
 ```{r}
@@ -200,39 +217,73 @@ Most operators and comparisons in R work as one would expect:
 ```
 
 ```{r}
-2^2
+3^2 # 3 power of 2
 ```
 
--   The boolean operators are spelled out as words. Note the use of `&` (and), `!` (not) and `|` (or).
+-   The boolean operators are spelled out as words. They are useful for condition ("if it is true or false") and filtering data.
 
 ```{r}
-TRUE & FALSE
+TRUE
+FALSE
 ```
 
-```{r}
-!FALSE
-```
+-   Note the use of `&` (and), `!` (not) and `|` (or).
 
 ```{r}
-TRUE | FALSE
-```
-
--   Comparison operators `>`, `<`, `>=` (greater or equal), `<=` (less or equal), `==` equality.
-
-```{r}
-2>1
-2<1
+TRUE & FALSE # FALSE win
 ```
 
 ```{r}
-2>2
-2<2
+!FALSE # Inverse
 ```
 
 ```{r}
-2>=2
-2<=2
+TRUE | FALSE # TRUE win
 ```
+
+-   Comparison operators can create booleans: `>`, `<`, `>=` (greater or equal), `<=` (less or equal), `==` equality.
+
+```{r}
+2>1 # Is 2 bigger than 1?
+2<1 # Is 2 smaller than 1?
+```
+
+```{r}
+2>2 # Is 2 bigger than 2?
+2<2 # Is 2 smaller than 2?
+```
+
+```{r}
+2>=2 # Is 2 bigger than or equal 2?
+2<=2 # Is 2 smaller than or equal to 2?
+```
+
+-   Note:
+
+    -   and `(&`): means that both condition most be true to return `TRUE`
+
+    -   or `(|`): means that least one condition need to be true tu return `TRUE`
+
+```{r}
+2>1 & 3>4 # is 2 bigger than 1 AND 3 bigger than 4?
+2>1 | 3>4 # is 2 bigger than 1 OR 3 bigger than 4?
+```
+
+It works with vectors:
+
+```{r}
+c(0, 5, 10, 15) > 2
+```
+
+So it is possible to filter vectors
+
+```{r}
+vector_to_filter <- c(3, 6, 9, 12)
+
+vector_to_filter[vector_to_filter > 5] # Keep all the value bigger than 5
+```
+
+There are other
 
 ```{r}
 # equality 
@@ -241,7 +292,7 @@ setequal(c(1,2,3), c(3,4,5))
 c(1,2,3) %in% c(3,4,5)
 ```
 
-## 4. Compound types: strings, list, sets, tuples and dictionaries [ ](#compound) ()
+## 4. Compound types: strings, list, sets, tuples and dictionaries
 
 ### Strings
 
@@ -252,7 +303,7 @@ s = "Hello world"
 typeof(s)
 ```
 
-In R, characters are one element of a vector. To collect the length of a character, we need to use a specific function (since `length()` only return on one.
+In R, characters are one element of a vector. To collect the length of a character, we need to use a specific function (since `length()` only return on 1 for characters).
 
 ```{r}
 # classic lenght
@@ -271,26 +322,28 @@ We can index a character in a string using `[]` after the function `strsplit(cha
 
 ```{r}
 s3 = strsplit(s, "")[[1]]
+s3
 s3[1]
 ```
 
-Note that in R `head()` allow to do an ordered selection (like `[]`) while `tail()` do the same backwards.
+Note that in R `head()` allows to do an ordered selection (like `[]`) while `tail()` do the same backwards.
 
 ```{r}
+head(s3, 3)
 tail(s3, 1)
 ```
 
 We can extract a part of a string using the syntax `[start:stop]`, which extracts characters between index `start` and `stop`:
 
 ```{r}
-s3[1:4]
+s3[2:4]
 ```
 
 ### List
 
 Lists are very similar to vector, except that each element can be of any type.
 
-The syntax for creating lists in R is `c(...)`:
+The syntax for creating lists in R is `list(...)`:
 
 ```{r}
 string_list = list('spring', 'summer', 'winter', 'fall')
@@ -310,11 +363,8 @@ float_list
 To access variables in a list:
 
 ```{r}
-string_list <- c("a", "b", "c", "d")
-string_list[1] # note that indexing starts at 1 in R!
-tail(string_list, 1) # last item in a list
-string_list[1:3] # we can use the same slicing techniques to manipulate lists as we could use on strings:
-rev(string_list) # slicing notation used to reverse a sequence.
+string_list <- list("a", "b", "c", "d")
+string_list[[1]] # note that indexing starts at 1 in R!
 ```
 
 #### Adding, inserting, modifying, and removing elements from lists
@@ -359,17 +409,11 @@ l <- l[l != "A"]
 l
 ```
 
-Remove an element with `del`
+### List advanced
 
-```{r}
-l <- l[-6]
+Lists are not the best method for quick and concise calculations or operations. Vectors are more appropriate. This is because vectors always have the same type, so calculations are easier for the computer (which can anticipate all the steps and therefore optimize). Lists come in handy when we want to have a collection of elements that have different types and names.
 
-l
-```
-
-### Dictionaries
-
-Dictionaries are also like lists, except that each element is a key-value pair. The syntax for dictionaries is `list(key1 = value1, ...)`. With a dictionary, you cannot have duplicated keys.
+List are also like vectors, except that each element is a key-value pair. The syntax for lists is `list(key1 = value1, ...)`.
 
 ```{r}
 student <- list(hair = c("brown", "pink"), 
@@ -396,71 +440,41 @@ To access an item of a key:
 
 ```{r}
 student$eye
+# or
+student[["eye"]]
 ```
 
 To change the value of a key:
 
 ```{r}
 student$eye <- 'blue'
+# or
+student[["eye"]]
 ```
 
 To add a new entry:
 
 ```{r}
 student$nationality <- 'Spanish'
+# or
+student[["nationality"]] <- 'Spanish'
 ```
 
 ```{r}
 student
 ```
 
-### Tuples
-
-Tuples are like lists, except that they cannot be modified once created, that is they are *immutable*.
-
-In R, tuples are created using the syntax `c(..., ..., ...)`:
-
-```{r}
-point <- c(10, 20)
-point
-class(point)
-```
-
-We can unpack a tuple by assigning it to a comma-separated list of variables:
-
-```{r}
-x <- point[1]
-y <- point[2]
-
-paste("x =", x)
-paste("y =", y)
-```
-
-If we try to assign a new value to an element in a tuple we get an error:
-
-```{r}
-# point[1] <- 20 # This will give an error because vectors in R are not immutable, but for the sake of example, we assume immutability.
-```
-
-Tuples can have mixed types:
-
-```{r}
-mixed <- list('hello', 2, 2.0)
-paste('contains string, integer and float variables in "mixed" variable:', mixed)
-```
-
-### Sets
-
-With a set, it returns unordered variables. It does not return duplicate values. You cannot change items in a set. Unordered means that the returned order of a set is random.
-
-```{r}
-set_ <- unique(c(12, 3, 5, 3, 9, 6, 2, 2))
-set_
-```
-
 ### User Input
 
+You can take an user input using using the `readline()` function. Not that if you are using it in a chunk you still have to interact with the code in the console:
+
+1.  Run the chunk
+2.  Go to the console
+3.  Answer the question "what is you names: " with a text
+4.  Go back to the chunk
+
 ```{r}
+#| eval: false # Not an R code, but a Quarto instruction
 # Input 
 name <- readline(prompt="What is your name: ")
 paste("My name is", name)
@@ -468,19 +482,23 @@ paste("My name is", name)
 
 ## 5. Control Flow
 
-### Conditional statements: if, elif, else
+### Conditional statements: if, else if, else
+
+You can execute your code conditionally by dividing it into different parts and setting conditions for running each specific part.
 
 The R syntax for conditional execution of code use the keywords `if`, `else if`, `else`:
+
+-   You can play with this by changin the value of `statement1` and `statement2` by `TRUE` or `FALSE`
 
 ```{r}
 statement1 <- FALSE
 statement2 <- FALSE
 
-if (statement1) { # explicitly this means "if statement1 is TRUE"
+if (statement1) { # "if statement1 is TRUE" do the following:
     "statement1 is TRUE"
-} else if (statement2) {
+} else if (statement2) { # "otherwise if statement2 is TRUE" do the following:"
     "statement2 is TRUE"
-} else {
+} else { # "therwise do the following:"
     "statement1 and statement2 are FALSE"
 }
 ```
@@ -492,30 +510,34 @@ In R, loops can be programmed in a number of different ways. The most common is 
 ### **`for` loops**:
 
 ```{r}
-for (x in c(1, 2, 3)) {
-    x
+for (x in 1:3) {# for each element of the list print it
+    print(x)
 }
 ```
 
-To iterate over key-value pairs of a dictionary:
+Note that in this case, the function `print()` is necessary.
+
+To iterate over key-value pairs of a list:
 
 ```{r}
-for (key in names(student)) {
-    paste(key, "=", student[[key]])
+for (key in names(student)) { # for each key of the list print "[key] = [value]"
+    print(paste(key, "=", student[[key]]))
 }
 ```
 
 ### `while` loops:
 
+Instead of passing each element of a list, it is possible to set the condition that a code is executed as long as a specific condition is met. You can run the whole chunk to see it in action:
+
 ```{r}
 i <- 0
 
-while (i < 5) {
+while (i < 5) { # "while i is smaller than 5 run the following code:"
     print(i) 
-    i <- i + 1 # this can abbreviated also as i+=1
+    i <- i + 1 
 }
 
-"done"
+"done" # Appears if done
 ```
 
 Note that the `print("done")` statement is not part of the `while` loop body because of the difference in indentation.
@@ -524,25 +546,46 @@ Note that the `print("done")` statement is not part of the `while` loop body bec
 # example of for loop and if statement: 
 # for each value in the list "integer_list" print a value that is greater or equal to 7
 integer_list <- c(5, 7, 9, 3, 8)
+
 for (x in integer_list) {
     if (x >= 7) { 
-        x
+        print(x)
     }
 }
 ```
 
 ## 6. Functions
 
-A function in R is defined using the keyword `function`, followed by a function name, a signature within parentheses `()`, and a curly brace `{`. The following code, with one additional level of indentation, is the function body.
+A function in R is defined using the keyword `function`, followed by a function name, a signature within parentheses `()`, and a curly brace `{`. The following code, with one additional level of indentation, is the function body. It return nothing but the function is available now.
 
 ```{r}
-square <- function(x) {
-    # Return the square of x.
-    return(x ^ 2)
+square <- function(x) { # for a given value x do the following:
+    return(x^2) # Return the square of x.
 }
 ```
 
+You can use your new function on any value:
+
 ```{r}
+square(4)
+square(10)
+```
+
+Note that you are not forced to use the return statement in the function, R will return the last value automatically:
+
+```{r}
+square <- function(x) { # for a given value x do the following:
+    x^2 # Return the square of x.
+}
+
+square(4)
+```
+
+You can even make it shorter by removing the brackets and putting everything in a single line:
+
+```{r}
+square <- function(x) x^2
+
 square(4)
 ```
 
@@ -553,7 +596,8 @@ Most of the functionality in R is provided by *packages*. The R Standard Library
 To use a package in an R program it first has to be installed. A quickest way is to do it here using the `install.packages` statement. For example, to install the package `ggplot2`, which is a useful package for plots, we can do:
 
 ```{r}
-# install.packages("ggplot2")
+#| eval: false
+install.packages("ggplot2")
 ```
 
 To use a package in an R program it first has to be imported. A package can be imported using the `library` statement. For example, to import the package `ggplot2`, which contains many standard plotting functions, we can do:
@@ -562,15 +606,24 @@ To use a package in an R program it first has to be imported. A package can be i
 library(ggplot2)
 ```
 
-This includes the whole package and makes it available for use later in the program. For example, we can do:
+This includes the whole package and makes it available for use later in the program.
+
+Note that R can creat plot without packages. But ggplot2 bring beautiful and modular graphs. Let's try it! For instance, R have built-in datasets that we can use. For instance we can invoke the `cars` dataset by simply calling it if it is for a short usecase:
 
 ```{r}
-x <- cos(2 * pi)
-x
+cars
 ```
 
+Then we can then plot it using the `plot()` function:
+
 ```{r}
-log(10)
+plot(cars)
+```
+
+ggplot allow to do the same:
+
+```{r}
+qplot(speed, dist, data = cars)
 ```
 
 Once a package is imported, we can list the symbols it provides using the `ls` function:
@@ -579,6 +632,28 @@ Once a package is imported, we can list the symbols it provides using the `ls` f
 ls("package:ggplot2")
 ```
 
+The best way to learn about a package is to use its documentation:
+
+-   [Main page](https://ggplot2.tidyverse.org/)
+
+-   [Get started](https://ggplot2.tidyverse.org/articles/ggplot2.html)
+
+-   [References](https://ggplot2.tidyverse.org/reference/index.html) (list of functions and objects from the package)
+
+There are also great free ressources:
+
+-   [R graphic Cookbook](https://r-graphics.org/)
+
+-   [Data visualization](https://socviz.co/index.html#preface)
+
+There are also great examples...
+
+-   <https://r-graph-gallery.com/>
+
+... and cool extensions:
+
+-   <https://exts.ggplot2.tidyverse.org/gallery/>
+
 ### Plotting with ggplot2
 
 ```{r}
@@ -586,30 +661,41 @@ library(ggplot2)
 library(dplyr)
 ```
 
+Let's create a sequence and plot it against its version plus 1:
+
 ```{r}
-x <- seq(1, 10, by=1)
+x <- 1:10
 qplot(x, x+1)
 ```
 
+Let's create a normal distribution of 500 values using `rnorm()` and plot it as an histogram:
+
 ```{r}
 data <- rnorm(500)    # 500 draws from the standard normal distribution
-qplot(data, bins=40, geom="histogram")
+qplot(data, geom="histogram")
 ```
 
 ## Manipulating data with dplyr
 
-dplyr makes use of this capability to allow DataFrames to be represented as HTML tables.
+It is possible to manipulate dataset (here called data frames) using base R functionalities. However, the dplyr make this manipulation easier. You need to install it firts with `install.package("dplyr")` then load the library with `library(dplyr)`:
 
 ```{r}
 library(dplyr)
 ```
 
-Read a csv file:
+To import a csv you can use the function `read.csv()` in base R, but the `read_csv()` in `dplyr` is faster and import everything as `tibble` table (an advanced kind of dataframe):
+
+-   If it does not works you can either:
+
+    -   \[Recommanded\]: Open the .Rproject and rerun the script.
+
+    -   Change the code to `df <- read_csv("data.csv1")`
 
 ```{r}
-df <- read.csv("Day1_Intro_R/data.csv")
-# df <- read.csv("data.csv")
+df <- read_csv("Day1_Intro_R/data.csv")
 ```
+
+Note that to have access to the data, you do not need to write the full path, you can simply press the key Tab inside the quotation mark of a
 
 Display a dataframe:
 
@@ -621,25 +707,119 @@ Display the size of your dataframe:
 
 ```{r}
 dim(df) # this is number of (rows, columns)
+nrow(df) # Number of rows
+ncol(df) # Number of cols
 ```
 
 Display the names of columns:
 
 ```{r}
 colnames(df)
+# or
+names(df)
 ```
 
-Create a new column:
+Create a new column the base R way:
 
 ```{r}
 # compute the average between Open and Close
-df <- df %>% mutate(mean_value = rowMeans(select(., Open, Close)))
-df$mean_value
+df$mean_value <- (df$Open/df$Close)*2
 ```
+
+Create a new column with Tidyverse (without pipe):
 
 ```{r}
 # axis=0 refer to columns 
-colMeans(select(df, Open, Close))
+df$mean_value <- colMeans(select(df, Open, Close))
+```
+
+R has a super power as a functional programming language. It can use pipes (`|>` and `%>%`). Those allows to pass the result of an operation to the next operation and therfore chain multiple operations. It allows to have a more readable code, easier to write and more composable. You can use 2 kinds of pipes:
+
+-   `magrittr` pipe (`%>%`): Powerful (can do more than the next one), it needs to be installed through a package of the `Tidyverse` (`magrittr`, `dplyr`, `rvest`, ...).
+
+-   Base (`|>`): useful, do not need any libraries
+
+Since we will use the dplyr, we will use magrittr pipe (`%>%`). No need to write it, simply use the following shortcut `Ctrl+Maj+M` or `Cmd+Maj+M`. With a few try, it comes naturally. As said before the pipe use is to pass values through operations. For instance consider the following example printing the value of the variable a:
+
+```{r}
+a <- "12"
+
+# Normal way
+print(a)
+
+# With a pipe
+a %>% print()
+
+```
+
+They both give the same result. However the pipe version is longer. The strength of the secon approach appear when we need more than one operation. For instance, imagine converting a to an integer before printing it:
+
+```{r}
+# Normal way
+print(as.integer(a))
+
+# With pipes
+a %>% as.integer() %>% print()
+```
+
+The first one still looks more concise, but it is in fact slower and harder to write. You have to start by the `print()` statement (the end) and go backward until the beginning which is counter-intuitive. While with the pipe approach you can consider %\>% as a "and". Writting it looks like, "I start with the variable 'a' AND I convert it into an integer AND I print it".
+
+This method scale also really well. Lets take a more extreme example. With the following steps:
+
+1.  Translate "a" into an integer
+2.  Compute the log10
+3.  Compute the square root
+4.  Print it
+
+```{r}
+# Normal way
+print(sqrt(log10(as.integer(a))))
+
+# with pipes
+a %>% 
+  as.integer() %>% 
+  log10() %>% 
+  sqrt() %>% 
+  print()
+```
+
+Note that in this code we can put expressions following a pipe in the next line for more readability. But the whole code is considered by R as only one line. So, you can run the code from whatever line and it will run the whole expression.
+
+It is even more complicated with the normal way and less readable. While with pipe you can read it like sentences connected by "AND". Generally, when operation start to stack, we desagreggate them into multiple steps like this:
+
+```{r}
+a <- as.integer(a)
+a <- log10(a)
+a <- sqrt(a)
+print(a)
+```
+
+This approach is more readable. The issue with this approach is that we have changed the value of a multiple time. But if we want to go back in a step, we need to re-run all the step before. It seems like nothing, but in a longer code and more complex, you can easily be overwhelmed and lost track of the state of your variable. You could improve that by storing new values in different variables:
+
+```{r}
+a <- 12
+
+a1 <- as.integer(a)
+a2 <- log10(a1)
+a3 <- sqrt(a2)
+print(a3)
+```
+
+But then we can create unecessary intermediate variable that have only no usage beside storing value that have no use in the rest of the code. Furthermore, both version are slower to write than the pipe version. Another advantage of the pipe function is that we can iteratively write the code and add and remove steps as needed. The when you are satisfied with the result, you can store it in a final variable:
+
+```{r}
+result <- 
+  a %>% 
+  as.integer() %>% 
+  log10() %>% 
+  sqrt() %>% 
+  print()
+```
+
+The pipes in dplyr allows to manipulate data frames steps by steps in a readable manner. But function from the tidyverse bring another strength. They always return data frame, makin the iteratino even easier since you keep everything, so modifying a single column won't stop you to do other manipulation with other columns in the same chain:
+
+```{r}
+# TODO: continue
 ```
 
 Selecting specific rows:
