@@ -689,10 +689,10 @@ To import a csv you can use the function `read.csv()` in base R, but the `read_c
 
     -   \[Recommanded\]: Open the .Rproject and rerun the script.
 
-    -   Change the code to `df <- read_csv("data.csv1")`
+    -   Change the code to `df <- read.csv("data.csv1")`
 
 ```{r}
-df <- read_csv("Day1_Intro_R/data.csv")
+df <- read.csv("Day1_Intro_R/data.csv")
 ```
 
 Note that to have access to the data, you do not need to write the full path, you can simply press the key Tab inside the quotation mark of a
@@ -723,7 +723,8 @@ Create a new column the base R way:
 
 ```{r}
 # compute the average between Open and Close
-df$mean_value <- (df$Open/df$Close)*2
+df$mean_value <- (df$Open+df$Close)/2
+df$mean_value
 ```
 
 Create a new column with Tidyverse (without pipe):
@@ -731,6 +732,7 @@ Create a new column with Tidyverse (without pipe):
 ```{r}
 # axis=0 refer to columns 
 df$mean_value <- colMeans(select(df, Open, Close))
+df$mean_value
 ```
 
 R has a super power as a functional programming language. It can use pipes (`|>` and `%>%`). Those allows to pass the result of an operation to the next operation and therfore chain multiple operations. It allows to have a more readable code, easier to write and more composable. You can use 2 kinds of pipes:
@@ -805,7 +807,7 @@ a3 <- sqrt(a2)
 print(a3)
 ```
 
-But then we can create unecessary intermediate variable that have only no usage beside storing value that have no use in the rest of the code. Furthermore, both version are slower to write than the pipe version. Another advantage of the pipe function is that we can iteratively write the code and add and remove steps as needed. The when you are satisfied with the result, you can store it in a final variable:
+But then we can create unecessary intermediate variables that have only no usage beside storing value that have no use in the rest of the code. Furthermore, both version are slower to write than the pipe version. Another advantage of the pipe function is that we can iteratively write the code and add and remove steps as needed. The when you are satisfied with the result, you can store it in a final variable:
 
 ```{r}
 result <- 
@@ -816,74 +818,165 @@ result <-
   print()
 ```
 
-The pipes in dplyr allows to manipulate data frames steps by steps in a readable manner. But function from the tidyverse bring another strength. They always return data frame, makin the iteratino even easier since you keep everything, so modifying a single column won't stop you to do other manipulation with other columns in the same chain:
+The pipes in dplyr allows to manipulate data frames steps by steps in a readable manner. But function from the tidyverse bring another strength. They always return data frame, makin the iteratino even easier since you keep everything, so modifying a single column won't stop you to do other manipulation with other columns in the same chain. Let's take the earlier example from the `df` dataframe and compute the mean of `Open` and `Close` columns.
 
 ```{r}
-# TODO: continue
+# compute the average between Open and Close
+df$mean_value <- (df$Open+df$Close)/2
+
+# With pipe
+df %>% 
+  mutate(mean_value = (Open+Close)/2)
 ```
 
-Selecting specific rows:
+The last expression return a data frame and added the new column to the end. Again you are free to put the new result in a new object. Then you can select specific rows:
 
 ```{r}
-df %>% filter(Close > Open)
+# Filtering
+df %>% 
+  filter(Close > Open) # keep row when Close is bigger than Open
 ```
 
-Display min and max values:
+We can combine it with the previous operation to chain everything. The new dataset has a new column `mean_value` and is filterd to keep row when Close is bigger than Open:
 
 ```{r}
-cat(min(df$Date, na.rm = T), max(df$Date, na.rm = T))
-cat(min(df$High, na.rm = T), max(df$High, na.rm = T))
+# Filtering after mutating
+df %>% 
+  mutate(mean_value = (Open+Close)/2) %>% 
+  filter(Close > Open)
 ```
 
-Find the date when Volume was highest:
+You can display the summary statistic of a given variable using the summary() function.
 
 ```{r}
-df %>% filter(Volume == max(Volume)) %>% select(Date)
+summary(df$High)
 ```
 
-Display basic statistics of your dataframe:
+You can do the same with the whole data frame:
 
 ```{r}
 summary(df)
 ```
 
-**Plots are very easy in ggplot2!**
+You can also request specific statistics using the corresponding functions:
 
 ```{r}
-df %>% ggplot(aes(x=Date)) + 
-  geom_line(aes(y=Open, color="Open")) + 
-  geom_line(aes(y=High, color="High")) + 
-  geom_line(aes(y=Low, color="Low")) + 
-  geom_line(aes(y=Close, color="Close"))
+mean(df$Volume)
+median(df$Volume)
+min(df$Volume)
+max(df$Volume)
+quantile(df$Volume)
+quantile(df$Volume, 0.95)
 ```
 
-Plotting in subplots:
+Chaining is useful when we need to answer a specific question without changing the data frame. For instance, you can find the date when `Volume` was highest:
 
 ```{r}
-library(gridExtra)
-p1 <- df %>% ggplot(aes(x=Date)) + 
-  geom_line(aes(y=Open, color="Open")) + 
-  geom_line(aes(y=High, color="High")) + 
-  geom_line(aes(y=Low, color="Low")) + 
-  geom_line(aes(y=Close, color="Close"))
-
-p2 <- df %>% ggplot(aes(x=Date)) + 
-  geom_line(aes(y=Volume, color="Volume"))
-
-grid.arrange(p1, p2, ncol=2)
+df %>% 
+  filter(Volume == max(Volume)) %>% 
+  select(Date)
 ```
 
-Boxplot:
+But sometimes, it is faster to use base R for simple isolated operations. For instance, the Date column in df is note in the date format but in text format. We can change it in one line:
 
 ```{r}
-df %>% ggplot(aes(x="", y=Close)) + 
+# Check the type of Date
+class(df$Date)
+
+# Change the type of Date as a date
+df$Date <- as.Date(df$Date)
+
+# Check the type of Date
+class(df$Date) 
+```
+
+
+If you want to extract the specific value and not a data frame, you can use the `pull()` function instead of `select()`:
+
+```{r}
+df %>% 
+  filter(Volume == max(Volume)) %>% 
+  pull(Date)
+```
+
+Plots are very easy in ggplot2 with `qplot()`! But there is another notation that is more used, the layered one:
+
+```{r}
+# Easy way
+qplot(Date, Open, data = df, geom = "line")
+
+# Layered way
+df %>% 
+  ggplot(aes(x=Date, y=Open)) +
+  geom_line()
+```
+
+It looks longer, but it is more flexible. It works like layers. Here is a short explanation of each part:
+- `ggplot()` initiate te figure
+- `aes()` map the column to different dimensions (x/y axis, color, line type, size, etc.)
+- `geom_*()` create a type of geometry
+    - `geom_line()` create line using value from `x` and `y`
+    
+The `aes()` part is quite movable. You can decide to put it in a different place to update the graph:
+
+```{r}
+# Different place, same result
+df %>% 
+  ggplot(aes(x=Date)) +
+  geom_line(aes(y=Open))
+```
+
+We get the same result. The advantage of using such an approach is that we can really be flexible in the parameter that we are using and also the number of layer that we can create:
+
+```{r}
+df %>% 
+  ggplot(aes(x=Date)) + 
+  geom_line(aes(y=Open, color="Open")) +
+  geom_line(aes(y=High, color="High")) +
+  geom_line(aes(y=Low, color="Low")) + 
+  geom_line(aes(y=Close, color="Close")) +
+  theme_bw() # Add a new theme
+```
+
+Just by changing the geom, we can have a large variety of plots. For instance here is a boxplot:
+
+```{r}
+df %>% 
+  ggplot(aes(x=Close)) + 
   geom_boxplot()
 ```
 
-Log scale:
+Note that the parameters are not compulsary as long as we keep theme in the righ order (x then y):
 
 ```{r}
-df %>% ggplot(aes(x="", y=Close)) + 
-  geom_boxplot() + 
-  scale_y_log10()
+# Parameters
+df %>% 
+  ggplot(aes(x=Close)) + 
+  geom_boxplot()
+
+# No parameters
+df %>% 
+  ggplot(aes(Close)) + 
+  geom_boxplot()
 ```
+
+Keeping the same structure, we can have different plots by changing the geom:
+
+```{r}
+# Boxplot
+df %>% 
+  ggplot(aes(Close)) + 
+  geom_boxplot()
+  
+# Histogram
+df %>% 
+  ggplot(aes(Close)) + 
+  geom_histogram()
+
+# Density
+df %>% 
+  ggplot(aes(Close)) + 
+  geom_density()
+```
+
+ggplot2 is a whole subject by itself and the Tidyverse ecosystem (dplyr, ggplot2, readr, ...) is an even bigger topic. We won't talk about it here, but in future tutorials.
