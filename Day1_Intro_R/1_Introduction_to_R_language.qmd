@@ -14,7 +14,7 @@ editor: visual
 
 This notebook is for students who are not familiar with R language.
 
-Note that **Many more resources are available on the Web**. Check out this website for more: https://www.w3schools.com/r/default.asp
+Note that **many more resources are available on the Web**. Check out this website for more: https://www.w3schools.com/r/default.asp
 
 ## 1. Basic concepts
 
@@ -42,11 +42,11 @@ R can be run in the following documents:
 
 -   Jupyter notebook (.ipynb)
 
-    -   You need to install the R kernel for Jupyter notebook use the [following tutorial](https://github.com/IRkernel/IRkernel) or you can try the [ark kernel](https://github.com/posit-dev/ark).
+    -   You need to install the R kernel for Jupyter notebook uses the [following tutorial](https://github.com/IRkernel/IRkernel) or you can try the [ark kernel](https://github.com/posit-dev/ark).
 
-Run a line (in a script or notebook) using Ctrl/Cmd+Enter and run code cell (in a notebook) by using Ctrl/Cmd+Shift+Enter or pressing the "Play" button in the toolbar above on the "Run button" or on the cell.
+Run a line (in a script or notebook) using Ctrl/Cmd+Enter and run code cells (in a notebook) by using Ctrl/Cmd+Shift+Enter or pressing the "Play" button in the toolbar above on the "Run button" or on the cell.
 
-To **print out results**, simply write print() with parenthesis, but it is not compulsory in R to output a result.
+To **print out results**, simply write print() with parentheses, but it is not compulsory in R to output a result.
 
 ```{r}
 # Make "Hello World!" appear to the console
@@ -71,7 +71,7 @@ Note: To see the document related to the function or library in:
 
 -   Jupyter lab/notebook: Shift+Tab.
 
-**Curly brackets**: Like many programming language, R does not care about the spaces because it is always bound to brackets (parentheses, brackets or curly brackets). Indentation is only for aesthetic matter and user are free to indent their code following their taste (unlike Python or Nim that can have indentation error). For example the indentation of the second `print()` does not break the code since it is in the brackets:
+**Curly brackets**: Like many programming languages, R does not care about the spaces because it is always bound to brackets (parentheses, brackets or curly brackets). Indentation is only for aesthetic matter and users are free to indent their code following their taste (unlike Python or Nim that can have an indentation error). For example, the indentation of the second `print()` does not break the code since it is in the brackets:
 
 ```{r}
 if (3==3){
@@ -83,7 +83,7 @@ if (3==3){
 
 **Rstudio:**
 
--   Code is run inside an environment (R version, project and environment). It can always be stop by pressing the "Stop" button or Ctrl+C shortcut (inside quarto/rmarkdown notebook or a script).
+-   Code is run inside an environment (R version, project and environment). It can always be stopped by pressing the "Stop" button or Ctrl+C shortcut (inside quarto/rmarkdown notebook or a script).
 
 **Jupyter lab/notebook:**
 
@@ -103,9 +103,9 @@ number_vector[1]
 number_list[[1]]
 ```
 
-Note: You need a double bracket to have access to a list element (see last line of code).
+Note: You need a double bracket to have access to a list element (see last lines of code).
 
-Tips: You can generate a continuous vector between two values using the signe `:` as follow:
+Tips: You can generate a continuous vector between two values using the sign `:` as follows:
 
 ```{r}
 1:10 # 1 to 10
@@ -121,7 +121,7 @@ seq(-5, 5, 5) # From-5 to 5 by steps of 5
 
 **R reserved words**
 
-R has reserved words that you can use as a variable name (except if you surround it by \`). Otherwise, R is smart enough to know which element your are talking about eventhoug, function, package and variable name have the same name.
+R has reserved words that you can use as a variable name (except if you surround it by \`). Otherwise, R is smart enough to know which element you are talking about even though, function, package and variable names have the same name.
 
 ```{r}
 # if, else, repeat, while, function, for, in, next, breaks, TRUE, FALSE, NULL, Inf, NA, NaN
@@ -129,7 +129,7 @@ R has reserved words that you can use as a variable name (except if you surround
 
 ## 2. Variables and types
 
-Variable names in R can contain alphanumerical characters `a-z`, `A-Z`, `0-9` and some special characters such as `_` and `.`. Variable names cannot start with a number (e.g., 22list), or cannot be R reserved words (see above), or cannot contain a space or `-`. If your variable does not respect this rules you can always surround it with `` ` `` and it will works.
+Variable names in R can contain alphanumerical characters `a-z`, `A-Z`, `0-9` and some special characters such as `_` and `.`. Variable names cannot start with a number (e.g., 22list), or cannot be R reserved words (see above), or cannot contain a space or `-`. If your variable does not respect this rule, you can always surround it with `` ` `` and it will works.
 
 Variables can contain different forms such as character (text), integer, or double (float). The variable can contain mix of these different forms.
 
